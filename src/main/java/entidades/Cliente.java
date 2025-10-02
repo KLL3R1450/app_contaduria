@@ -13,23 +13,25 @@ public class Cliente {
     public String cp;
     public String correo = "";
     public int honorarios;
+    public int id_contador;
     public ArrayList<Regimenes> regimenes = new ArrayList<>();
     
-    public Cliente(String nombre, String rfc, String cp, int monto){
-        this.id_cliente = id_cliente;
+    public Cliente(String nombre, String rfc, String cp, int monto,int id_contador){
         this.nombre = nombre;
         this.rfc = rfc;
         this.cp = cp;
         this.honorarios = monto;
+        this.id_contador = id_contador;
     }
 
-    public Cliente(String nombre, String rfc, String cp, String correo, int monto) {
+    public Cliente(String nombre, String rfc, String cp, String correo, int monto, int id_contador) {
         this.id_cliente = id_cliente;
         this.nombre = nombre;
         this.rfc = rfc;
         this.cp = cp;
         this.correo = correo;
         this.honorarios = monto;
+        this.id_contador = id_contador;
     }
     
     public Cliente(int id_cliente){

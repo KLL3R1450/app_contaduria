@@ -10,12 +10,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JOptionPane;
 
 public class ClientesDAO {
     private Connection conexion = ConectorBD.getConexion();
     
     public String insertCliente(Cliente cliente){
-        String sql = "INSERT INTO clientes(nombre_cliente,rfc_cliente,cp_cliente,correo_cliente,m_honorarios_cliente) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO clientes(nombre_cliente,rfc_cliente,cp_cliente,correo_cliente,m_honorarios_cliente,id_contador,id_estado) VALUES (?,?,?,?,?,?,?)";
         int id = -1;
         
         try{
@@ -27,6 +28,8 @@ public class ClientesDAO {
             insertC.setString(3, cliente.cp);
             insertC.setString(4, cliente.correo);
             insertC.setInt(5, cliente.honorarios);
+            insertC.setInt(6,cliente.id_contador);
+            insertC.setInt(7, 1);
             
             int insertado = insertC.executeUpdate();
             
@@ -51,11 +54,11 @@ public class ClientesDAO {
                 if(conexion != null){
                     
                     conexion.rollback();
-                    System.err.println("Transaccion revertida");
+                    return "Transaccion revertida";
                     
                 }
                 
-            }catch(SQLException rb){System.err.println("Transaccion no revertida: " + rb.getMessage());
+            }catch(SQLException rb){return "Transaccion no revertida: " + rb.getMessage();
             
             }
             
@@ -67,7 +70,7 @@ public class ClientesDAO {
            try { conexion.setAutoCommit(true); }
            
            catch(SQLException e){
-               System.err.println("Error al restaurar autocommit: " + e.getMessage());
+               return "Error al restaurar autocommit: " + e.getMessage();
            }
            
         }
@@ -89,7 +92,7 @@ public class ClientesDAO {
     }
     
     public ArrayList<Cliente> getClientes(){
-        String sql = "SELECT * FROM clientes";
+        String sql = "SELECT * FROM clientes WHERE id_estado = 1";
         ArrayList<Cliente> cls = new ArrayList<>();
         Map<Integer,Cliente> mapeoClientes= new HashMap<>();
 
@@ -104,14 +107,15 @@ public class ClientesDAO {
                 c.cp = clientes.getString("cp_cliente");
                 c.correo = clientes.getString("correo_cliente");
                 c.honorarios = clientes.getInt("m_honorarios_cliente");
-
+                c.id_contador = clientes.getInt("id_contador");
+                
                 cls.add(c);
                 mapeoClientes.put(c.getId(),c);
             }
 
 
         }catch(SQLException e){
-            System.err.println("Fallo al obtener clientes:" + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Fallo al obtener clientes:" + e.getMessage());
         }
 
         sql = "SELECT * FROM regimenes_clientes_view";
@@ -134,10 +138,80 @@ public class ClientesDAO {
             }
 
         }catch(SQLException ex){
-            System.err.println("Fallo al obtener regiemenes: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null,"Fallo al obtener regiemenes: " + ex.getMessage());
         }
 
         return cls;
     }
+    
+    public String deleteRegimenCliente(int idCliente, int idRegimen){
+        String sql = "DELETE FROM regimenes_clientes WHERE id_cliente = ? AND id_regimen = ?";
+        
+        try(PreparedStatement deleteR = conexion.prepareStatement(sql)){
+            deleteR.setInt(1, idCliente);
+            deleteR.setInt(2, idRegimen);
+            
+            deleteR.executeUpdate();
+            
+            return "Regimen eliminado con exito";
+            
+        }catch(SQLException ex){
+            return "Error al eliminar el regimen: " + ex.getMessage();
+        }
+    }
+    
+    public boolean regimenYaExistente(int idCliente, int idRegimen){
+        String sql = "SELECT nombre_cliente FROM clientes_regimenes_view WHERE id_cliente = ? AND id_regimen = ?";
+        
+        try(PreparedStatement re = conexion.prepareStatement(sql)){
+            re.setInt(1, idCliente);
+            re.setInt(2, idRegimen);
+            
+            ResultSet r = re.executeQuery();
+            
+            if(r.next()) return true;
+            
+        }catch(SQLException ex){
+            System.err.println("Fallo al comporbar regimen existente: " + ex.getMessage());
+        }
+        
+        return false;
+        
+    }
+    
+    public String agregarRegimenCliente(int idCliente, int idRegimen){
+        if(regimenYaExistente(idCliente, idRegimen)) return "El regimen ya existe para este cliente";
+        
+        String sql = "INSERT INTO regimenes_clientes(id_cliente,id_regimen) VALUES (?,?)";
+        
+        try(PreparedStatement ir = conexion.prepareStatement(sql)){
+            
+            ir.setInt(1, idCliente);
+            ir.setInt(2, idRegimen);
+            
+            ir.executeUpdate();
+            
+            return "El regimen se le agrego perfectamente al cliente";
+        }catch(SQLException ex){
+            return "Fallo al agregar el regimen: " + ex.getMessage();
+        }
+        
+    }
+    
+    public String deleteCliente(int idCliente){
+        String sql = "UPDATE clientes SET id_estado = 2 WHERE id_cliente = ?";
+        
+        try(PreparedStatement dc = conexion.prepareStatement(sql)){
+            dc.setInt(1, idCliente);
+            
+            dc.executeUpdate();
+            
+            return "Se elimino el cliente con exito";
+            
+        }catch(SQLException ex){
+            return "Fallo al eliminar el cliente: " + ex.getMessage();
+        }
+    }
+    
     
 }
