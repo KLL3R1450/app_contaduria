@@ -14,7 +14,7 @@ public class Main {
         ArrayList<Cliente> c = cDAO.getClientes();
         
         for(Cliente cl : c){
-            System.out.println(cl.regimenes.get(0).regimen );
+            System.out.println(cl.idsRegimenes.get(0 ));
         }
     }
 }

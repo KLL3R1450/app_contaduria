@@ -14,7 +14,7 @@ public class Cliente {
     public String correo = "";
     public int honorarios;
     public int id_contador;
-    public ArrayList<Regimenes> regimenes = new ArrayList<>();
+    public ArrayList<Integer> idsRegimenes = new ArrayList<>();
     
     public Cliente(String nombre, String rfc, String cp, int monto,int id_contador){
         this.nombre = nombre;

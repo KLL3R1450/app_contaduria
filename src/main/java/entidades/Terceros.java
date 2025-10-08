@@ -10,30 +10,33 @@ import java.util.ArrayList;
  * @author Osmar
  */
 public class Terceros {
-    public int id_tercero;
+    private int id_tercero;
     public String nombre;
     public String rfc;
     public String cp;
     public String correo= "";
-    public int monto;
-    public ArrayList<Regimenes> regimenes = new ArrayList<>();
+    public ArrayList<Integer> idsRegimenes = new ArrayList<>();
     
-    public Terceros(int id_tercero, String nombre, String rfc, String cp, String correo, int monto) {
+    public Terceros(int id_tercero, String nombre, String rfc, String cp, String correo) {
         this.id_tercero = id_tercero;
         this.nombre = nombre;
         this.rfc = rfc;
         this.cp = cp;
         this.correo = correo;
-        this.monto = monto;
     }
 
-    public Terceros(int id_tercero, String nombre, String rfc, String cp, int monto) {
+    public Terceros(int id_tercero, String nombre, String rfc, String cp) {
         this.id_tercero = id_tercero;
         this.nombre = nombre;
         this.rfc = rfc;
         this.cp = cp;
-        this.monto = monto;
     }
     
+    public Terceros(int id_tercero){
+        this.id_tercero = id_tercero;
+    }
     
+    public int getId(){
+        return this.id_tercero;
+    }
 }

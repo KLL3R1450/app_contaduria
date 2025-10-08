@@ -38,11 +38,12 @@ public class ClientesDAO {
                 ResultSet rs = insertC.getGeneratedKeys();
                 
                 if(rs.next()) id = rs.getInt("id_cliente");
-         
+                rs.close();
             }
             
-            if(id > 0 && !cliente.regimenes.isEmpty()){
-                insertRegimenesClientes(id, cliente.regimenes);
+            insertC.close();
+            if(id > 0 && !cliente.idsRegimenes.isEmpty()){
+                insertRegimenesClientes(id, cliente.idsRegimenes);
             }
             
             conexion.commit();
@@ -77,17 +78,20 @@ public class ClientesDAO {
         
     }
     
-    private void insertRegimenesClientes(int id, ArrayList<Regimenes> regimenes) throws SQLException{
+    private void insertRegimenesClientes(int id, ArrayList<Integer> regimenes) throws SQLException{
         String sql = "INSERT INTO regimenes_clientes(id_cliente,id_regimen) VALUES (?,?)";
         
         try(PreparedStatement insertRC = conexion.prepareStatement(sql)){
-            for(Regimenes r : regimenes){
+            
+            for(Integer r : regimenes){
+                if(regimenYaExistente(id, r)) continue;
                     insertRC.setInt(1, id);
-                    insertRC.setInt(2, r.getId());
+                    insertRC.setInt(2, r);
                     insertRC.addBatch();  
             }
             
             insertRC.executeBatch();
+            insertRC.close();
         } 
     }
     
@@ -112,13 +116,15 @@ public class ClientesDAO {
                 cls.add(c);
                 mapeoClientes.put(c.getId(),c);
             }
-
+            
+            getC.close();
+            clientes.close();
 
         }catch(SQLException e){
             JOptionPane.showMessageDialog(null, "Fallo al obtener clientes:" + e.getMessage());
         }
 
-        sql = "SELECT * FROM regimenes_clientes_view";
+        sql = "SELECT id_cliente,id_regimen FROM regimenes_clientes";
         try(PreparedStatement getRC = conexion.prepareStatement(sql)){
             ResultSet rg = getRC.executeQuery();
 
@@ -128,15 +134,12 @@ public class ClientesDAO {
                 if(mapeoClientes.containsKey(idC)){
                     Cliente c = mapeoClientes.get(idC);
 
-                    c.regimenes.add(
-                    new Regimenes(rg.getInt("id_regimen"),
-                    rg.getString("des_regimen")
-                    )
-                    );
+                    c.idsRegimenes.add(rg.getInt("id_regimen"));
 
                 }
             }
-
+            getRC.close();
+            rg.close();
         }catch(SQLException ex){
             JOptionPane.showMessageDialog(null,"Fallo al obtener regiemenes: " + ex.getMessage());
         }
@@ -152,7 +155,7 @@ public class ClientesDAO {
             deleteR.setInt(2, idRegimen);
             
             deleteR.executeUpdate();
-            
+            deleteR.close();
             return "Regimen eliminado con exito";
             
         }catch(SQLException ex){
@@ -169,10 +172,14 @@ public class ClientesDAO {
             
             ResultSet r = re.executeQuery();
             
-            if(r.next()) return true;
+            if(r.next()){
+                r.close();
+                return true;
+            }
             
         }catch(SQLException ex){
             System.err.println("Fallo al comporbar regimen existente: " + ex.getMessage());
+            return true;
         }
         
         return false;
@@ -190,6 +197,7 @@ public class ClientesDAO {
             ir.setInt(2, idRegimen);
             
             ir.executeUpdate();
+            ir.close();
             
             return "El regimen se le agrego perfectamente al cliente";
         }catch(SQLException ex){
@@ -205,13 +213,12 @@ public class ClientesDAO {
             dc.setInt(1, idCliente);
             
             dc.executeUpdate();
-            
+            dc.close();
             return "Se elimino el cliente con exito";
             
         }catch(SQLException ex){
             return "Fallo al eliminar el cliente: " + ex.getMessage();
         }
     }
-    
     
 }
