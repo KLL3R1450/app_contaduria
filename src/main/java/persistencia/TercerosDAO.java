@@ -57,7 +57,7 @@ public class TercerosDAO {
             
             conexion.commit();
             
-            return "Tercero insertado correctamente con sus clientes y sus regimenes" ;
+            return "correcto" ;
             
         }catch(SQLException ex){
             
@@ -159,7 +159,7 @@ public class TercerosDAO {
             deleteT.executeUpdate();
             deleteT.close();
             
-            return "Tercero eliminado con exito";
+            return "correcto";
         }catch(SQLException ex){
             return "Tercero no pudo ser eliminado: " + ex.getMessage();
         }
@@ -183,7 +183,7 @@ public class TercerosDAO {
                 t.correo = rs.getString("correo_cliente");
                 
                 listaTerceros.add(t);
-                mapaTerceros.put(t.getId(), t);
+                mapaTerceros.put(t.id_persona, t);
                 
             }
             
@@ -231,7 +231,7 @@ public class TercerosDAO {
             deleteR.executeUpdate();
             deleteR.close();
             
-            return "Regimen eliminado con exito";
+            return "correcto";
             
         }catch(SQLException ex){
             return "Error al eliminar el regimen: " + ex.getMessage();
@@ -248,7 +248,7 @@ public class TercerosDAO {
             insertarR.executeUpdate();
             insertarR.close();
             
-            return "Regimen insertado con exito";
+            return "correcto";
         }catch(SQLException ex){
             return "Error al insertar el regimen: " + ex.getMessage();
         }

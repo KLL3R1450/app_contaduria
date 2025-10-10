@@ -3,7 +3,6 @@ package persistencia;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import entidades.Cliente;
-import entidades.Regimenes;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -47,7 +46,7 @@ public class ClientesDAO {
             }
             
             conexion.commit();
-            return "Ingreso Exitoso";
+            return "correcto";
             
         }catch(SQLException e){ 
             
@@ -114,7 +113,7 @@ public class ClientesDAO {
                 c.id_contador = clientes.getInt("id_contador");
                 
                 cls.add(c);
-                mapeoClientes.put(c.getId(),c);
+                mapeoClientes.put(c.id_persona,c);
             }
             
             getC.close();
@@ -156,7 +155,7 @@ public class ClientesDAO {
             
             deleteR.executeUpdate();
             deleteR.close();
-            return "Regimen eliminado con exito";
+            return "correcto";
             
         }catch(SQLException ex){
             return "Error al eliminar el regimen: " + ex.getMessage();
@@ -199,7 +198,7 @@ public class ClientesDAO {
             ir.executeUpdate();
             ir.close();
             
-            return "El regimen se le agrego perfectamente al cliente";
+            return "correcto";
         }catch(SQLException ex){
             return "Fallo al agregar el regimen: " + ex.getMessage();
         }
@@ -214,7 +213,7 @@ public class ClientesDAO {
             
             dc.executeUpdate();
             dc.close();
-            return "Se elimino el cliente con exito";
+            return "correcto";
             
         }catch(SQLException ex){
             return "Fallo al eliminar el cliente: " + ex.getMessage();

@@ -5,11 +5,14 @@
 package persistencia;
 
 import entidades.Contadores;
+import entidades.Declaracion;
 import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JOptionPane;
 
 public class ContadoresDAO {
@@ -19,26 +22,28 @@ public class ContadoresDAO {
         String sql = "SELECT * FROM contadores WHERE id_estado = 1";
         ArrayList<Contadores> contadores = new ArrayList<>();
         
-        
         try(PreparedStatement gc = conexion.prepareStatement(sql)){
             ResultSet c = gc.executeQuery();
             
             while(c.next()){
-                contadores.add(
+                Contadores co = 
                 new Contadores(
                         c.getInt("id_contador"),
                         c.getString("nombre_contador"),
                         c.getString("contacto_contador")
-                )
                 );
+                
+                contadores.add(co);
             }
             
+            c.close();
             return contadores;
             
         }catch(SQLException ex){
             JOptionPane.showMessageDialog(null,"Error al obtener los contadores: " + ex.getMessage());
             return contadores;
         }
+        
     }
     
     public String insertContador(Contadores conta){
@@ -51,7 +56,7 @@ public class ContadoresDAO {
            
            ic.executeUpdate();
            
-           return "Contador ingresado con exito";
+           return "correcto";
            
         }catch(SQLException ex) {
             return "Error al ingresar el contador:" + ex.getMessage();
@@ -65,7 +70,7 @@ public class ContadoresDAO {
             dc.setInt(1, id_contador);
             dc.executeUpdate();
             
-            return "Contador eliminado con exito";
+            return "correcto";
         }catch(SQLException ex){
             return "Error al eliminar el contador :" + ex.getMessage();
         }
@@ -79,7 +84,7 @@ public class ContadoresDAO {
             ucc.setInt(2, id_cliente);
             
             ucc.executeUpdate();
-            return "Contacto actualizado con exito";
+            return "correcto";
             
         }catch(SQLException ex){
             return "Fallo al actualizar el contacto del contador: " + ex.getMessage();

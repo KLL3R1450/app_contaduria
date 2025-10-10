@@ -46,7 +46,7 @@ public class EFirmasDAO {
             
             sFE.executeUpdate();
             sFE.close();
-            return "Fechas cambiadas con exito";
+            return "correcto";
         }catch(SQLException ex){
             return "Error al cambiar las fechas: " + ex.getMessage();
         }
