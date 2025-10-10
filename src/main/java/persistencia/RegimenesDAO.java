@@ -16,12 +16,12 @@ import javax.swing.JOptionPane;
  *
  * @author Osmar
  */
-public abstract class RegimenesDAO {
+public class RegimenesDAO {
     private static final Connection conexion = ConectorBD.getConexion();
     
-    public static ArrayList<Regimenes> getRegimenes(){
+    public  ArrayList<Regimenes> getRegimenes(){
         ArrayList<Regimenes> regimenes = new ArrayList<>();
-        String sql = "SELECT * FROM regiemenes";
+        String sql = "SELECT * FROM regimenes";
         try(PreparedStatement gr = conexion.prepareStatement(sql)){
             ResultSet getR = gr.executeQuery();
             
@@ -32,7 +32,7 @@ public abstract class RegimenesDAO {
             }
             
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Error al obtener clientes: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null,"Error al obtener regimenes: " + ex.getMessage());
         }
         
         return regimenes;

@@ -4,17 +4,15 @@
  */
 package main;
 
+import controlador.Controlador;
 import entidades.Cliente;
-import java.util.ArrayList;
-import persistencia.ClientesDAO;
 
 public class Main {
     public static void main(String[] args) {
-        ClientesDAO cDAO = new ClientesDAO();
-        ArrayList<Cliente> c = cDAO.getClientes();
+        Controlador c = Controlador.getControlador();
         
-        for(Cliente cl : c){
-            System.out.println(cl.idsRegimenes.get(0 ));
-        }
+        c.cargarTodo();
+        
+        System.out.println(c.clientes.get(c.clientes.size()-1).nombre);
     }
 }

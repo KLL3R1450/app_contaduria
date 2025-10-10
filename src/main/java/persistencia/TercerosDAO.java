@@ -176,7 +176,7 @@ public class TercerosDAO {
             ResultSet rs = getTerceros.executeQuery();
             
             while(rs.next()){
-                Terceros t = new Terceros(rs.getInt("id_cliente"));
+                Terceros t = new Terceros(rs.getInt("id_tercero"));
                 t.nombre = rs.getString("nombre_cliente");
                 t.rfc = rs.getString("rfc_cliente");
                 t.cp = rs.getString("cp_cliente");
@@ -195,7 +195,7 @@ public class TercerosDAO {
         }
         
         try{
-            String sql = "SELECT id_terceros,id_regimen FROM regimenes_clientes";
+            String sql = "SELECT id_tercero,id_regimen FROM regimenes_terceros";
             PreparedStatement reCl = conexion.prepareStatement(sql);
             
             ResultSet rs = reCl.executeQuery();

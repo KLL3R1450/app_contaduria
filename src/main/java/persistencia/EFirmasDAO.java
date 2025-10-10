@@ -2,10 +2,10 @@ package persistencia;
 
 import entidades.EFirmas;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 /**
@@ -15,25 +15,26 @@ import javax.swing.JOptionPane;
 public class EFirmasDAO {
     private final Connection conexion = ConectorBD.getConexion();
     
-    public EFirmas getEfirmaDe(int id_cliente){
-        String sql = "SELECT fecha_expiracionn,fecha_renovacion FROM e_firmas WHERE id_cliente = ?";
+    public ArrayList<EFirmas> getAllFirmas(){
+        String sql = "SELECT fecha_expiracion,fecha_renovacion,id_cliente FROM e_firmas";
+        ArrayList<EFirmas> firmas = new ArrayList<>();
         
-        try(PreparedStatement gEF = conexion.prepareStatement(sql)){
+        try(PreparedStatement gAF = conexion.prepareStatement(sql); ResultSet rs = gAF.executeQuery()){
             
-            gEF.setInt(1, id_cliente);
-            ResultSet rs = gEF.executeQuery();
-            
-            if(rs.next()) {
-                return new EFirmas(rs.getString("fecha_expiracion"),
-           rs.getString("fecha_renovacion"),
-                rs.getInt("id_cliente"));
+            while(rs.next()){
+                EFirmas firma = new EFirmas(
+                        rs.getString("fecha_expiracion"),
+                        rs.getString("fecha_renovacion"),
+                        rs.getInt("id_cliente")
+                );
+                firmas.add(firma);
             }
-            
+             
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Error al obtener la EFirma" + ex.getMessage());
+            JOptionPane.showMessageDialog(null,"error al obtener EFirmas: " + ex.getMessage());
         }
         
-        return null;
+        return firmas;
     }
     
     public String renovacion(String fechaExpiracion,String fechaRenovacion, int id_cliente){

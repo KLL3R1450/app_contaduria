@@ -140,7 +140,7 @@ public class ClientesDAO {
             getRC.close();
             rg.close();
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Fallo al obtener regiemenes: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null,"Fallo al obtener regimenes: " + ex.getMessage());
         }
 
         return cls;
