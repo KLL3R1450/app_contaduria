@@ -94,10 +94,9 @@ public class ClientesDAO {
         } 
     }
     
-    public ArrayList<Cliente> getClientes(){
+    public Map<Integer,Cliente> getClientes(){
         String sql = "SELECT * FROM clientes WHERE id_estado = 1";
-        ArrayList<Cliente> cls = new ArrayList<>();
-        Map<Integer,Cliente> mapeoClientes= new HashMap<>();
+        Map<Integer,Cliente> cls = new HashMap<>();
 
 
         try(PreparedStatement getC = conexion.prepareStatement(sql)){
@@ -112,8 +111,7 @@ public class ClientesDAO {
                 c.honorarios = clientes.getInt("m_honorarios_cliente");
                 c.id_contador = clientes.getInt("id_contador");
                 
-                cls.add(c);
-                mapeoClientes.put(c.id_persona,c);
+                cls.put(c.id_persona, c);
             }
             
             getC.close();
@@ -130,8 +128,8 @@ public class ClientesDAO {
             while(rg.next()){
                 int idC = rg.getInt("id_cliente");
 
-                if(mapeoClientes.containsKey(idC)){
-                    Cliente c = mapeoClientes.get(idC);
+                if(cls.containsKey(idC)){
+                    Cliente c = cls.get(idC);
 
                     c.idsRegimenes.add(rg.getInt("id_regimen"));
 
@@ -162,7 +160,7 @@ public class ClientesDAO {
         }
     }
     
-    public boolean regimenYaExistente(int idCliente, int idRegimen){
+    private boolean regimenYaExistente(int idCliente, int idRegimen){
         String sql = "SELECT nombre_cliente FROM clientes_regimenes_view WHERE id_cliente = ? AND id_regimen = ?";
         
         try(PreparedStatement re = conexion.prepareStatement(sql)){
@@ -204,6 +202,21 @@ public class ClientesDAO {
         }
         
     }
+    
+    
+    /*    public Cliente getClienteById(int idCliente){
+    try{
+    String sql = "SELECT * FROM clientes WHERE id_cliente = ?";
+    PreparedStatement gC = conexion.prepareStatement(sql);
+    
+    gC.setInt(1, idCliente);
+    ResultSet rs = gC.executeQuery();
+    
+    if(rs.next()){
+    Cliente c = new Cliente
+    }
+    }
+    }*/
     
     public String deleteCliente(int idCliente){
         String sql = "UPDATE clientes SET id_estado = 2 WHERE id_cliente = ?";

@@ -112,7 +112,7 @@ public class TercerosDAO {
         return "correcto";
     }
     
-    public boolean terceroRegimen(int idTercero, int idRegimen){
+    private boolean terceroRegimen(int idTercero, int idRegimen){
         String sql = "SELECT id_tercero FROM regiemenes_terceros WHERE id_tercero = ? AND id_regimen = ?";
         
         try(PreparedStatement tr = conexion.prepareStatement(sql)){
@@ -131,7 +131,7 @@ public class TercerosDAO {
         return false;
     }
     
-    public String insertarRegimenes(int idTercero, ArrayList<Integer> regimenes){
+    private String insertarRegimenes(int idTercero, ArrayList<Integer> regimenes){
         String sql = "INSERT INTO regimenes_clientes VALUES (?,?)";
         
         try(PreparedStatement ir = conexion.prepareStatement(sql)){
@@ -165,9 +165,8 @@ public class TercerosDAO {
         }
     }
     
-    public ArrayList<Terceros> getTerceros(){
-        ArrayList<Terceros> listaTerceros = new ArrayList<>();
-        Map<Integer, Terceros> mapaTerceros = new HashMap<>();
+    public Map<Integer,Terceros> getTerceros(){
+        Map<Integer, Terceros> listaTerceros = new HashMap<>();
                 
         try{
             String sql = "SELECT * FROM terceros";
@@ -182,9 +181,7 @@ public class TercerosDAO {
                 t.cp = rs.getString("cp_cliente");
                 t.correo = rs.getString("correo_cliente");
                 
-                listaTerceros.add(t);
-                mapaTerceros.put(t.id_persona, t);
-                
+                listaTerceros.put(t.id_persona,t);                
             }
             
             getTerceros.close();
@@ -203,8 +200,8 @@ public class TercerosDAO {
             while(rs.next()){
                 int id_tercero = rs.getInt("id_tercero");
                 
-                if(mapaTerceros.containsKey(id_tercero)){
-                    Terceros t = mapaTerceros.get(id_tercero);
+                if(listaTerceros.containsKey(id_tercero)){
+                    Terceros t = listaTerceros.get(id_tercero);
                     
                     t.idsRegimenes.add(rs.getInt("id_regimen"));
                 }
