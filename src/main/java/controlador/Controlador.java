@@ -26,10 +26,10 @@ public class Controlador implements IControler{
     private DeclaracionDAO dBDeclaraciones;
     private EFirmasDAO dBFirmas;
     
-    public ArrayList<Contadores> contadores;
+    public Map<Integer,Contadores> contadores;
     public Map<Integer,Cliente> clientes;
-    public ArrayList<Declaracion> declaraciones;
-    public ArrayList<EFirmas> eFirmas;
+    public Map<Integer,Declaracion> declaraciones;
+    public Map<Integer,EFirmas> eFirmas;
     public ArrayList<Regimenes> regimenes;
     public Map<Integer,Terceros> terceros;
     
@@ -54,10 +54,10 @@ public class Controlador implements IControler{
         dBTerceros = new TercerosDAO();
         dBDeclaraciones = new DeclaracionDAO();
         dBFirmas = new EFirmasDAO();
-        contadores = new ArrayList<>();
+        contadores = new HashMap<>();
         clientes  = new HashMap<>();
-        declaraciones = new ArrayList<>();
-        eFirmas =  new ArrayList<>();
+        declaraciones = new HashMap<>();
+        eFirmas =  new HashMap<>();
         regimenes = new ArrayList<>();
         terceros = new HashMap<>();
     }
@@ -68,20 +68,15 @@ public class Controlador implements IControler{
         return controlador;
     }
 
-    public ArrayList<Contadores> getAllContadores(){
+    public Map<Integer,Contadores> getAllContadores(){
         return this.contadores;
     }
     
-    public Contadores getContadorByName(String nombre){
-        for(Contadores c : contadores) if(nombre.equals(c.nombre)) return c;
-        
-        return null;
-    }
     
     public ArrayList<Cliente> getClientesByContador(int idContador){
         ArrayList<Cliente> clients = new ArrayList();
         
-        Contadores contador = contadores.get((idContador-1));
+        Contadores contador = contadores.get(idContador);
         
         for(Integer i : contador.idsClientes){
              clients.add(clientes.get(i));
@@ -94,7 +89,7 @@ public class Controlador implements IControler{
         
         String respuesta = dBContadores.insertContador(contador);
         
-        if("correcto".equals(respuesta)) contadores.add(contador);
+        if("correcto".equals(respuesta)) dBContadores.getContadores();
         
         return respuesta;
     }
@@ -102,7 +97,7 @@ public class Controlador implements IControler{
     public String deleteContador(int idContador){
         String respuesta = dBContadores.deleteContador(idContador);
         
-        if("correcto".equals(respuesta)) contadores.remove((idContador-1));
+        if("correcto".equals(respuesta)) contadores.remove(idContador);
                 
         return respuesta;
     }
@@ -110,7 +105,9 @@ public class Controlador implements IControler{
     public String updateContactoConta(String contacto, int idContador){
         String respuesta = dBContadores.updateContactoContador(contacto, idContador);
         
-        if("correcto".equals(respuesta)) contadores = dBContadores.getContadores();
+        if("correcto".equals(respuesta)){
+            contadores.get(idContador).contacto = contacto;
+        }
         
         return respuesta;
     }
@@ -130,7 +127,7 @@ public class Controlador implements IControler{
     public String deleteCliente(int idCliente){
         String respuesta = dBClientes.deleteCliente(idCliente);
         
-        if("correcto".equals(respuesta)) clientes.remove(idCliente-1);
+        if("correcto".equals(respuesta)) clientes.remove(idCliente);
         
         return respuesta;
     }
@@ -140,7 +137,7 @@ public class Controlador implements IControler{
         
         if("correcto".equals(respuesta)){
             
-           clientes.get(idCliente).idsRegimenes.add(idRegimen); 
+           clientes.get(idCliente).idsRegimenes.add((Integer)idRegimen); 
         }
         
         return respuesta;
@@ -207,5 +204,124 @@ public class Controlador implements IControler{
         return respuesta;
     }
     
+    public ArrayList<Terceros> getTercerosDeCliente(int idCliente){
+        ArrayList<Integer> idTerceros = dBClientes.getTercerosCliente(idCliente);
+        ArrayList<Terceros> terce = new ArrayList<>();
+        
+        if(idTerceros.isEmpty()) return terce;
+        
+        for(Integer i : idTerceros) terce.add(terceros.get(i));
+        
+        return terce;
+    }
+    
+    public ArrayList<Regimenes> getRegimenes(){
+        return regimenes;
+    }
+    
+    public String addRegimen(Regimenes r){
+        String respuesta = dBRegimenes.addRegimen(r);
+        
+        if("correcto".equals(respuesta)) regimenes.add(r);
+        
+        return respuesta;
+    }
+    
+    public String deleteRegimen(Regimenes r){
+        String respuesta = dBRegimenes.addRegimen(r);
+        
+        if("correcto".equals(respuesta)){
+            
+            for(int i = 0; i < regimenes.size(); i++){
+                
+                if(r.getId() == regimenes.get(i).getId()){
+                    
+                    regimenes.remove(i);
+                    break;
+                    
+                }
+            }
+        }
+        
+        return respuesta;
+    }
+    
+    public Map<Integer, EFirmas> getAllFirmas(){
+        return eFirmas;
+    }
+    
+    public String renovarFirma(String fechaE, String fechaR, int idCliente){
+        String respuesta = dBFirmas.renovacion(fechaE, fechaR, idCliente);
+        
+        if("correcto".equals(respuesta)){
+            EFirmas ef = eFirmas.get(idCliente);
+            
+            ef.fecha_expiracion = fechaE;
+            ef.fecha_renovacion = fechaR;
+        }
+        
+        return respuesta;
+    }
+    
+    public String insertarDeclaracion(int id_cliente, int anio, int mes){
+        String respuesta = dBDeclaraciones.insertDeclaracion(id_cliente, anio, mes);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones = dBDeclaraciones.getAllDeclaraciones();
+        }
+        
+        return respuesta;
+    }
+    
+    public String colocarGastosDeclaracion(int id_declaracion){
+        String respuesta = dBDeclaraciones.colocarGastos(id_declaracion);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones.get(id_declaracion).gastos = 1;
+        }
+        
+        return respuesta;
+    }
+    
+    public String colocarIngresosDeclaracion(int id_declaracion){
+        String respuesta = dBDeclaraciones.colocarIngresos(id_declaracion);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones.get(id_declaracion).ingresos = 1;
+        }
+        
+        return respuesta;
+    }
+    
+    public String colocarIngresosYGastosDeclaracion(int id_declaracion){
+        String respuesta = dBDeclaraciones.colocarIngresosGastos(id_declaracion);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones.get(id_declaracion).ingresos = 1;
+            declaraciones.get(id_declaracion).gastos = 1;
+        }
+        
+        return respuesta;
+    }
+    
+    public String setDeclarado(int id_declaracion){
+        String respuesta = dBDeclaraciones.setDeclarado(id_declaracion);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones.get(id_declaracion).declarado = 1;
+        }
+        
+        return respuesta;
+    }
+    
+    public String desDeclarar(int id_declaracion){
+        String respuesta = dBDeclaraciones.desDeclarar(id_declaracion);
+        
+        if("correcto".equals(respuesta)){
+            declaraciones.get(id_declaracion).declarado = 0;
+        }
+        
+        return respuesta;
+    }
     
 }

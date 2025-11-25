@@ -13,6 +13,6 @@ public class Main {
         
         c.cargarTodo();
         
-        System.out.println(c.clientes.get(c.clientes.size()-1).nombre);
+        System.out.println(c.clientes.get(c.clientes.size()).nombre);
     }
 }

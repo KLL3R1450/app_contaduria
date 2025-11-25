@@ -5,7 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JOptionPane;
 
 
@@ -100,9 +101,9 @@ public class DeclaracionDAO {
         }
     }
     
-    public ArrayList<Declaracion> getAllDeclaraciones(){
+    public Map<Integer,Declaracion> getAllDeclaraciones(){
         String sql = "SELECT * FROM declaraciones_clientes";
-        ArrayList<Declaracion> decs = new ArrayList<>();
+        Map<Integer, Declaracion> decs = new HashMap<>();
         
         
         try(PreparedStatement gAD = conexion.prepareStatement(sql)){
@@ -114,7 +115,7 @@ public class DeclaracionDAO {
                         rs.getInt("anio"),rs.getInt("mes"),rs.getInt("gastos"),
                         rs.getInt("ingresos"),rs.getInt("declarado")
                 );
-                decs.add(d);
+                decs.put(d.getIdDeclaracion(), d);
             }
             
             return decs;

@@ -3,6 +3,7 @@ package persistencia;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import entidades.Cliente;
+import entidades.Terceros;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -203,20 +204,28 @@ public class ClientesDAO {
         
     }
     
-    
-    /*    public Cliente getClienteById(int idCliente){
-    try{
-    String sql = "SELECT * FROM clientes WHERE id_cliente = ?";
-    PreparedStatement gC = conexion.prepareStatement(sql);
-    
-    gC.setInt(1, idCliente);
-    ResultSet rs = gC.executeQuery();
-    
-    if(rs.next()){
-    Cliente c = new Cliente
+    public ArrayList<Integer>  getTercerosCliente(int idCliente){
+        ArrayList<Integer> ter = new ArrayList<>();
+        
+        String sql = "SELECT id_tercero FROM terceros_clientes WHERE id_cliente = ?";
+        
+        try(PreparedStatement ts = conexion.prepareStatement(sql)){
+            
+            ts.setInt(1, idCliente);
+            
+            ResultSet rs = ts.executeQuery();
+            
+            while(rs.next()){
+                ter.add(rs.getInt(1));
+            }
+            
+        }catch(SQLException ex){
+            System.err.println("error al obtener los terceros" + ex.getMessage());
+            
+        }
+        
+        return ter;
     }
-    }
-    }*/
     
     public String deleteCliente(int idCliente){
         String sql = "UPDATE clientes SET id_estado = 2 WHERE id_cliente = ?";
@@ -233,4 +242,25 @@ public class ClientesDAO {
         }
     }
     
+    protected ArrayList<Integer> getClientesDeContador(int idContador){
+        ArrayList<Integer> listaClientes = new ArrayList<>();
+        
+        String sql = "SELECT id_cliente FROM clientes WHERE id_contador = ?";
+        
+        try(PreparedStatement lc = conexion.prepareStatement(sql)){
+            
+            lc.setInt(1, idContador);
+            
+            ResultSet rs = lc.executeQuery();
+            
+            while(rs.next()){
+                listaClientes.add(rs.getInt("id_cliente"));
+            }
+            
+            
+        }catch(SQLException ex){
+            System.err.println("Erro al obtener los clientes del contador: " + ex.getMessage());
+        } 
+        return listaClientes;
+    }
 }

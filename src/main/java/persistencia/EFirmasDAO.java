@@ -5,7 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JOptionPane;
 
 /**
@@ -15,9 +16,9 @@ import javax.swing.JOptionPane;
 public class EFirmasDAO {
     private final Connection conexion = ConectorBD.getConexion();
     
-    public ArrayList<EFirmas> getAllFirmas(){
+    public Map<Integer,EFirmas> getAllFirmas(){
         String sql = "SELECT fecha_expiracion,fecha_renovacion,id_cliente FROM e_firmas";
-        ArrayList<EFirmas> firmas = new ArrayList<>();
+        Map<Integer,EFirmas> firmas = new HashMap<>();
         
         try(PreparedStatement gAF = conexion.prepareStatement(sql); ResultSet rs = gAF.executeQuery()){
             
@@ -27,7 +28,7 @@ public class EFirmasDAO {
                         rs.getString("fecha_renovacion"),
                         rs.getInt("id_cliente")
                 );
-                firmas.add(firma);
+                firmas.put(firma.getIdCliente(), firma);
             }
              
         }catch(SQLException ex){

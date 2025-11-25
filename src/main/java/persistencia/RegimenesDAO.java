@@ -37,4 +37,34 @@ public class RegimenesDAO {
         
         return regimenes;
     }
+    
+    public String addRegimen(Regimenes r){
+        String sql = "INSERT INTO regimenes(des_regimen) values (?)";
+        
+        try(PreparedStatement ar = conexion.prepareStatement(sql)){
+            ar.setString(1, r.regimen);
+            
+            ar.execute();
+            
+            return "correcto";
+        }catch(SQLException ex){
+            return "Error al insertar el nuevo regimen: " + ex.getMessage();
+        }
+    }
+    
+    public String deleteRegimen(int idRegimen){
+        String sql = "DELETE FROM regimenes WHERE id_regimen = ?";
+        
+        try(PreparedStatement dr = conexion.prepareStatement(sql)){
+            
+            dr.setInt(1, idRegimen);
+            
+            dr.execute();
+            
+            return "correcto";
+            
+        }catch(SQLException ex){
+            return "Error al eliminar el regimen: " + ex.getMessage();
+        }
+    }
 }

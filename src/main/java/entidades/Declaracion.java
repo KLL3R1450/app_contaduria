@@ -37,4 +37,6 @@ public class Declaracion {
     public int getIdCliente(){
         return id_cliente;
     }
+    
+    
 }

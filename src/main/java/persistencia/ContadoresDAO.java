@@ -18,9 +18,9 @@ import javax.swing.JOptionPane;
 public class ContadoresDAO {
     public Connection conexion = ConectorBD.getConexion();
     
-    public ArrayList<Contadores> getContadores(){
+    public Map<Integer,Contadores> getContadores(){
         String sql = "SELECT * FROM contadores WHERE id_estado = 1";
-        ArrayList<Contadores> contadores = new ArrayList<>();
+        Map<Integer,Contadores> contadores = new HashMap<>();
         
         try(PreparedStatement gc = conexion.prepareStatement(sql)){
             ResultSet c = gc.executeQuery();
@@ -33,10 +33,14 @@ public class ContadoresDAO {
                         c.getString("contacto_contador")
                 );
                 
-                contadores.add(co);
+                co.idsClientes = new ClientesDAO().getClientesDeContador(co.getId());
+                
+                contadores.put(co.getId(),co);
             }
             
             c.close();
+            
+            
             return contadores;
             
         }catch(SQLException ex){
@@ -45,6 +49,7 @@ public class ContadoresDAO {
         }
         
     }
+    
     
     public String insertContador(Contadores conta){
         String sql = "INSERT INTO contadores(nombre_contador,contacto_contador,id_estado) VALUES (?,?,?)";

@@ -238,6 +238,8 @@ public class TercerosDAO {
     public String insertarRegimenTerero(int idTercero, int idRegimen){
         String sql = "INSERT INTO regimenes_tercero VALUES (?,?)";
         
+        if(terceroRegimen(idTercero, idRegimen)) return "El tercero ya tiene ese regimen";
+        
         try(PreparedStatement insertarR = conexion.prepareStatement(sql)){
             insertarR.setInt(1, idTercero);
             insertarR.setInt(2, idRegimen);
