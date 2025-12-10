@@ -29,7 +29,13 @@ public class Cliente extends Personas{
     
     public Cliente(int id_cliente){
         this.id_persona = id_cliente;
-    };
+    }
     
-    
+    public void updateCliente(String nombre, String cp, String correo, int monto, int id_contador){
+        this.nombre = nombre;
+        this.cp = cp;
+        this.correo = correo;
+        this.honorarios = monto;
+        this.id_contador = id_contador;
+    }
 }

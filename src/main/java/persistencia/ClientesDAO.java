@@ -263,4 +263,27 @@ public class ClientesDAO {
         } 
         return listaClientes;
     }
+    
+    // Funciones nuevas
+    
+    public String updateCliente(Cliente c, int idCliente){
+        String sql = "UPDATE clientes SET nombre_cliente = ?, cp_cliente = ?, correo_cliente = ?, m_honorarios_cliente = ?, id_contador = ? WHERE id_cliente = ?";
+        
+        try(PreparedStatement update = conexion.prepareStatement(sql)){
+            
+            update.setString(1, c.nombre);
+            update.setString(2, c.cp);
+            update.setString(3, c.correo);
+            update.setInt(4, c.honorarios);
+            update.setInt(5, c.id_contador);
+            update.setInt(6, idCliente);
+            
+            update.execute();
+            
+            return "correcto";
+            
+        }catch(SQLException ex){
+            return "Error al editar: " + ex.getMessage();
+        }
+    }
 }

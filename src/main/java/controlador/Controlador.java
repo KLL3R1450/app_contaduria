@@ -324,4 +324,19 @@ public class Controlador implements IControler{
         return respuesta;
     }
     
+    //Metodos Nuevos
+    
+    public Cliente getClienteById(int id){
+        return clientes.get(id);
+    }
+    
+    
+    public String updateCliente(Cliente c){
+        String respuesta = dBClientes.updateCliente(c, c.id_persona);
+        
+        if("correcto".equals(respuesta)) clientes.put(c.id_persona, c);
+        
+        
+        return respuesta;  
+    }
 }
