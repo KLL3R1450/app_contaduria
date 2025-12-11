@@ -1,0 +1,124 @@
+
+package UI;
+
+import entidades.Regimenes;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author Osmar
+ */
+public class Clickeo implements MouseListener{
+
+    private DefaultListModel<String> modeloActuales;
+    private DefaultListModel<String> modeloDisponibles;
+    private ArrayList<Regimenes> añadidos;
+    private ArrayList<Regimenes> quitados;
+    private ArrayList<Regimenes> all;
+    private JList<String> listaA;
+    private JList<String> ListaD;
+    private boolean hayCambios = false;
+
+    public Clickeo(DefaultListModel<String> modeloActuales, DefaultListModel<String> modeloDisponibles, ArrayList<Regimenes> añadidos, ArrayList<Regimenes> quitados, ArrayList<Regimenes> all, JList<String> listaA, JList<String> ListaD) {
+        this.modeloActuales = modeloActuales;
+        this.modeloDisponibles = modeloDisponibles;
+        this.añadidos = añadidos;
+        this.quitados = quitados;
+        this.all = all;
+        this.listaA = listaA;
+        this.ListaD = ListaD;
+        this.hayCambios = false;
+    }
+
+    
+    
+    @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() >= 2){
+                if(e.getSource().equals(listaA)){
+                    quitarRegimen();
+                }
+                else if(e.getSource().equals(ListaD)){
+                    añadirRegimen();
+                }
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+        }
+        
+        private void quitarRegimen(){
+             String nombre = listaA.getSelectedValue();
+
+            if(nombre == null) {
+
+                JOptionPane.showMessageDialog(null, "Selecciona un regimen");
+                return;
+
+            }
+
+            Regimenes r = null;
+
+            for(Regimenes re : all){
+                if(re.regimen.equals(nombre)){
+                    r = re;
+                    break;
+                }
+            }
+            modeloActuales.removeElement(nombre);
+            quitados.add(r);
+            modeloDisponibles.addElement(r.regimen);
+            if(!hayCambios) hayCambios = true;
+        }
+        
+        private void añadirRegimen(){
+            Regimenes r = null;
+            String nombre = ListaD.getSelectedValue();
+
+            if(nombre == null) {
+
+                JOptionPane.showMessageDialog(null, "Selecciona un regimen");
+                return;
+
+            }
+
+            for(Regimenes re : all){
+                if(re.regimen.equals(nombre)){
+                    r = re;
+                    break;
+                }
+            }
+
+            modeloDisponibles.removeElement(nombre);
+            añadidos.add(r);
+            modeloActuales.addElement(r.regimen);
+            if(!hayCambios) hayCambios = true;
+        }
+        
+        public boolean getHayCambios(){
+            return hayCambios;
+        }
+        
+        public void setHayCambios(boolean b){
+            this.hayCambios = b;
+        }
+    
+}

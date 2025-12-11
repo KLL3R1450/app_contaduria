@@ -6,8 +6,11 @@ package UI;
 
 import controlador.Controlador;
 import entidades.Cliente;
+import entidades.Contadores;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
+import utils.Validator;
 
 /**
  *
@@ -17,25 +20,31 @@ public class DetallesClientes extends javax.swing.JDialog {
 
     private static Controlador c;
     private static Cliente cliente;
-    private static final String REGEX_EMAIL = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-    private static final String REGEX_CP = "^[0-9]{5}$";
+    private final String REGEX_EMAIL = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    private final String REGEX_CP = "^[0-9]{5}$";
     private boolean hayCambios;
+    private ArrayList<Contadores> contadores;
     
     public DetallesClientes(java.awt.Frame parent, boolean modal, Controlador controler, Cliente i) {
         super(parent, modal);
         initComponents();
+        
         c = controler;
         cliente = i;
+        contadores = new ArrayList<>();
+        
         setContadores();
         setValues();
+        
         hayCambios = false;
     }
     
     private void setContadores(){
         ComboContadores.removeAllItems();
-        
-        for(Integer i : c.getAllContadores().keySet()){
-            ComboContadores.addItem(""+ i);
+        ComboContadores.addItem("Selecciona un contador");
+        for(Contadores i : c.getAllContadores().values()){
+            ComboContadores.addItem(i.nombre);
+            contadores.add(i);
         }
                 
     }
@@ -46,7 +55,8 @@ public class DetallesClientes extends javax.swing.JDialog {
         FCP.setText(cliente.cp);
         FCorreo.setText(cliente.correo);
         FHonorarios.setText(""+cliente.honorarios);
-        ComboContadores.setSelectedItem((Integer) cliente.id_contador );
+        
+        ComboContadores.setSelectedItem( c.getAllContadores().get(cliente.id_contador ).nombre);
     }
     
     private void setUnEditable(){
@@ -62,13 +72,6 @@ public class DetallesClientes extends javax.swing.JDialog {
         checkNombre.setSelected(false);
     }
     
-    private boolean verificarCorreo(String correo){
-        return Pattern.matches(REGEX_EMAIL, correo);
-    }
-    
-    private boolean verificarCP(String cp){
-        return Pattern.matches(REGEX_CP, cp);
-    }
     
 
     /**
@@ -449,21 +452,21 @@ public class DetallesClientes extends javax.swing.JDialog {
 
     private void cambiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiarActionPerformed
         if(FCP.getText().isEmpty() || FCorreo.getText().isEmpty() || FNombre.getText().isEmpty() 
-                || FHonorarios.getText().isEmpty() || ComboContadores.getSelectedIndex() == 1){
+                || FHonorarios.getText().isEmpty() || ComboContadores.getSelectedIndex() == 0){
             
             JOptionPane.showMessageDialog(this, "Ningun campo puede estar vacio");
             return;
             
         }
         
-        if(!verificarCP(FCP.getText())){
+        if(!Validator.validarCodigoPostal(FCP.getText())){
             
             JOptionPane.showMessageDialog(this, "Codigo Postal no valido");
             return;
         }
             
 
-        if(!verificarCorreo(FCorreo.getText())){
+        if(!Validator.validarCorreo(FCorreo.getText())){
             
             JOptionPane.showMessageDialog(this, "Correo no valido");
             return;
@@ -481,6 +484,21 @@ public class DetallesClientes extends javax.swing.JDialog {
             return;
         }
         
+        int idContador = 0;
+        
+        for(Contadores co : contadores){
+            
+            if(co.nombre.equals(ComboContadores.getSelectedItem())) {
+                idContador = co.getId();
+                break;
+            }
+        }
+        
+        if(idContador == 0){
+            JOptionPane.showMessageDialog(rootPane, "Selecciona un contador");
+            return;
+        }
+        
         int decision = JOptionPane.showConfirmDialog(this, "Estas seguro de cambiar los datos");
         
         if(JOptionPane.YES_OPTION == decision){
@@ -489,8 +507,8 @@ public class DetallesClientes extends javax.swing.JDialog {
                     FNombre.getText(), 
                        FCP.getText(), 
                     FCorreo.getText(),
-                          honorarios, 
-                          Integer.parseInt((String)ComboContadores.getSelectedItem())
+                    honorarios, 
+                idContador
             );
             
             String respuesta = c.updateCliente(cliente);

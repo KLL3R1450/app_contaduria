@@ -32,20 +32,22 @@ public class ClientesDAO {
             insertC.setInt(7, 1);
             
             int insertado = insertC.executeUpdate();
+            System.out.println("I" + insertado);
             
-            if(insertado > 0){
+            if(insertado != 0){
                 
                 ResultSet rs = insertC.getGeneratedKeys();
                 
-                if(rs.next()) id = rs.getInt("id_cliente");
+                if(rs.next()) id = rs.getInt(1);
                 rs.close();
+                System.out.println("id");
             }
             
             insertC.close();
             if(id > 0 && !cliente.idsRegimenes.isEmpty()){
                 insertRegimenesClientes(id, cliente.idsRegimenes);
             }
-            
+            System.out.println("regimenes");
             conexion.commit();
             return "correcto";
             

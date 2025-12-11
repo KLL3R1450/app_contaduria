@@ -116,10 +116,10 @@ public class Controlador implements IControler{
         return clientes;
     }
         
-    public String insertCliente(int idContador, Cliente cliente){
+    public String insertCliente( Cliente cliente){
         String respuesta =  dBClientes.insertCliente(cliente);
         
-        if("correcto".equals(respuesta)) dBClientes.getClientes();
+        if("correcto".equals(respuesta)) clientes = dBClientes.getClientes();
         
         return respuesta;
     }
@@ -245,7 +245,7 @@ public class Controlador implements IControler{
         
         return respuesta;
     }
-    
+        
     public Map<Integer, EFirmas> getAllFirmas(){
         return eFirmas;
     }

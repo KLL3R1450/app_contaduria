@@ -20,24 +20,29 @@ public class CambiarRegimenes extends javax.swing.JDialog {
     private ArrayList<Regimenes> añadidos;
     private ArrayList<Regimenes> quitados;
     private ArrayList<Regimenes> all;
-    private boolean hayCambios;
+    private Clickeo l;
     
     public CambiarRegimenes(java.awt.Frame parent, boolean modal,Controlador controler, Cliente client) {
         super(parent, modal);
         initComponents();
+        
         c = controler;
         cliente = client;
         modeloActuales = new DefaultListModel();
         modeloDisponibles = new DefaultListModel();
         all = c.getRegimenes();
+        añadidos = new ArrayList<>();
+        quitados = new ArrayList<>();
+        
+        l = new Clickeo(modeloActuales, modeloDisponibles, añadidos, quitados, all, listaA, ListaD);
         
         listaA.setModel(modeloActuales);
         ListaD.setModel(modeloDisponibles);
         
-        añadidos = new ArrayList<>();
-        quitados = new ArrayList<>();
+        listaA.addMouseListener(l);
+        ListaD.addMouseListener(l);
         
-        hayCambios = false;
+        
         
         setRegimenes();
     }
@@ -241,59 +246,10 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem11ActionPerformed
 
-    private void quitarRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarRActionPerformed
-        String nombre = listaA.getSelectedValue();
-        
-        if(nombre == null) {
-            
-            JOptionPane.showMessageDialog(rootPane, "Selecciona un regimen");
-            return;
-            
-        }
-        
-        Regimenes r = null;
-        
-        for(Regimenes re : all){
-            if(re.regimen.equals(nombre)){
-                r = re;
-                break;
-            }
-        }
-        modeloActuales.removeElement(nombre);
-        quitados.add(r);
-        modeloDisponibles.addElement(r.regimen);
-        if(!hayCambios) hayCambios = true;
-    }//GEN-LAST:event_quitarRActionPerformed
-
-    private void añadirRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_añadirRActionPerformed
-        Regimenes r = null;
-        String nombre = ListaD.getSelectedValue();
-        
-        if(nombre == null) {
-            
-            JOptionPane.showMessageDialog(rootPane, "Selecciona un regimen");
-            return;
-            
-        }
-        
-        for(Regimenes re : all){
-            if(re.regimen.equals(nombre)){
-                r = re;
-                break;
-            }
-        }
-        
-        modeloDisponibles.removeElement(nombre);
-        añadidos.add(r);
-        modeloActuales.addElement(r.regimen);
-        if(!hayCambios) hayCambios = true;
-    }//GEN-LAST:event_añadirRActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         for(Regimenes r : añadidos){
             String s = c.addRegimenACliente(cliente.id_persona, r.getId());
-            if(s.equals("correcto")) continue;
-            else{
+            if(!s.equals("correcto")){
                 JOptionPane.showMessageDialog(rootPane, s);
                 return;
             }
@@ -301,19 +257,18 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         
         for(Regimenes r : quitados){
             String s = c.deleteRegimenACliente(cliente.id_persona, r.getId());
-            if(s.equals("correcto")) continue;
-            else{
+            if(!s.equals("correcto")) {
                 JOptionPane.showMessageDialog(rootPane, s);
                 return;
             }
         }
         
         JOptionPane.showMessageDialog(rootPane, "Cambios exitosos");
-        hayCambios = false;
+        l.setHayCambios(false);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        if(hayCambios){
+        if(l.getHayCambios()){
             int respuesta = JOptionPane.showConfirmDialog(rootPane, "Hay cambios, esta seguro de salir??");
             if(JOptionPane.YES_OPTION == respuesta){
                 this.dispose();
@@ -323,6 +278,14 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         
         this.dispose();
     }//GEN-LAST:event_formWindowClosing
+
+    private void añadirRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_añadirRActionPerformed
+
+    }//GEN-LAST:event_añadirRActionPerformed
+
+    private void quitarRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarRActionPerformed
+
+    }//GEN-LAST:event_quitarRActionPerformed
 
     /**
      * @param args the command line arguments
@@ -390,4 +353,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
     > listaA;
     private javax.swing.JButton quitarR;
     // End of variables declaration//GEN-END:variables
+
+    
 }
