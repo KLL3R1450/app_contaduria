@@ -162,18 +162,20 @@ public class ClientesDAO {
     }
     
     private boolean regimenYaExistente(int idCliente, int idRegimen){
-        String sql = "SELECT nombre_cliente FROM clientes_regimenes_view WHERE id_cliente = ? AND id_regimen = ?";
+        String sql = "SELECT id_regimen FROM regimenes_clientes WHERE id_cliente = ?";
         
         try(PreparedStatement re = conexion.prepareStatement(sql)){
             re.setInt(1, idCliente);
-            re.setInt(2, idRegimen);
             
             ResultSet r = re.executeQuery();
             
-            if(r.next()){
-                r.close();
-                return true;
+            while(r.next()){
+                if(r.getInt(1) == idRegimen){
+                    r.close();
+                    return true;
+                }
             }
+            
             
         }catch(SQLException ex){
             System.err.println("Fallo al comporbar regimen existente: " + ex.getMessage());

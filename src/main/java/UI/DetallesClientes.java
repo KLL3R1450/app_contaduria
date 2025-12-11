@@ -19,6 +19,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     private static Cliente cliente;
     private static final String REGEX_EMAIL = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     private static final String REGEX_CP = "^[0-9]{5}$";
+    private boolean hayCambios;
     
     public DetallesClientes(java.awt.Frame parent, boolean modal, Controlador controler, Cliente i) {
         super(parent, modal);
@@ -27,6 +28,7 @@ public class DetallesClientes extends javax.swing.JDialog {
         cliente = i;
         setContadores();
         setValues();
+        hayCambios = false;
     }
     
     private void setContadores(){
@@ -78,6 +80,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        cambiar1 = new javax.swing.JButton();
         FNombre = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         FRFC = new javax.swing.JTextField();
@@ -97,6 +100,7 @@ public class DetallesClientes extends javax.swing.JDialog {
         checkHonorarios = new javax.swing.JCheckBox();
         checkContador = new javax.swing.JCheckBox();
         cambiar = new javax.swing.JButton();
+        regimenes = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -110,7 +114,19 @@ public class DetallesClientes extends javax.swing.JDialog {
         jMenu4 = new javax.swing.JMenu();
         jMenuItem12 = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        cambiar1.setText("Cambiar");
+        cambiar1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cambiar1ActionPerformed(evt);
+            }
+        });
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         FNombre.setEditable(false);
         FNombre.addActionListener(new java.awt.event.ActionListener() {
@@ -188,6 +204,13 @@ public class DetallesClientes extends javax.swing.JDialog {
         cambiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cambiarActionPerformed(evt);
+            }
+        });
+
+        regimenes.setText("cambiar regimenes");
+        regimenes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                regimenesActionPerformed(evt);
             }
         });
 
@@ -287,7 +310,9 @@ public class DetallesClientes extends javax.swing.JDialog {
                             .addComponent(checkContador))))
                 .addContainerGap(54, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(25, 25, 25)
+                .addComponent(regimenes)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(cambiar, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(42, 42, 42))
         );
@@ -296,10 +321,11 @@ public class DetallesClientes extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel7)
                 .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(FNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1)
-                    .addComponent(checkNombre))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(checkNombre, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(FNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(FRFC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -310,7 +336,7 @@ public class DetallesClientes extends javax.swing.JDialog {
                         .addComponent(FCP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel3))
                     .addComponent(checkCP))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addGap(18, 18, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -330,7 +356,9 @@ public class DetallesClientes extends javax.swing.JDialog {
                             .addComponent(checkContador)))
                     .addComponent(checkCorreo))
                 .addGap(9, 9, 9)
-                .addComponent(cambiar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cambiar)
+                    .addComponent(regimenes))
                 .addContainerGap())
         );
 
@@ -360,23 +388,48 @@ public class DetallesClientes extends javax.swing.JDialog {
     }//GEN-LAST:event_FCPActionPerformed
 
     private void checkNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkNombreActionPerformed
-        if(FNombre.isEditable()) FNombre.setEditable(false);
-        else FNombre.setEditable(true);
+        if(FNombre.isEditable()) {
+            FNombre.setEditable(false);
+            
+        }
+        else {
+            FNombre.setEditable(true);
+            if(!hayCambios) hayCambios = true;
+        }
     }//GEN-LAST:event_checkNombreActionPerformed
 
     private void checkCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCPActionPerformed
-       if(FCP.isEditable()) FCP.setEditable(false);
-       else FCP.setEditable(true);
+       if(FCP.isEditable()) {
+           FCP.setEditable(false);
+           
+       }
+       else {
+           FCP.setEditable(true);
+           if(!hayCambios) hayCambios = true;
+       }
+       
     }//GEN-LAST:event_checkCPActionPerformed
 
     private void checkCorreoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkCorreoActionPerformed
-        if(FCorreo.isEditable()) FCorreo.setEditable(false);
-        else FCorreo.setEditable(true);
+        if(FCorreo.isEditable()) {
+            FCorreo.setEditable(false);
+            
+        }
+        else {
+            if(!hayCambios) hayCambios = true;
+            FCorreo.setEditable(true);
+        }
     }//GEN-LAST:event_checkCorreoActionPerformed
 
     private void checkHonorariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkHonorariosActionPerformed
-        if(FHonorarios.isEditable()) FHonorarios.setEditable(false);
-        else FHonorarios.setEditable(true);
+        if(FHonorarios.isEditable()) {
+            FHonorarios.setEditable(false);
+            
+        }
+        else {
+            if(!hayCambios) hayCambios = true;
+            FHonorarios.setEditable(true);
+        }
     }//GEN-LAST:event_checkHonorariosActionPerformed
 
     private void ComboContadoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboContadoresActionPerformed
@@ -384,8 +437,14 @@ public class DetallesClientes extends javax.swing.JDialog {
     }//GEN-LAST:event_ComboContadoresActionPerformed
 
     private void checkContadorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkContadorActionPerformed
-        if(ComboContadores.isEnabled()) ComboContadores.setEnabled(false);
-        else ComboContadores.setEnabled(true);
+        if(ComboContadores.isEnabled()) {
+            ComboContadores.setEnabled(false);
+            
+        }
+        else {
+            if(!hayCambios) hayCambios = true;
+            ComboContadores.setEnabled(true);
+        }
     }//GEN-LAST:event_checkContadorActionPerformed
 
     private void cambiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiarActionPerformed
@@ -441,7 +500,32 @@ public class DetallesClientes extends javax.swing.JDialog {
         
         setValues();
         setUnEditable();
+        hayCambios = false;
     }//GEN-LAST:event_cambiarActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        int opcion;
+        
+        if(hayCambios) {
+            
+            opcion = JOptionPane.showConfirmDialog(rootPane, "Hay cambios pendientes deseas cerrar??");
+            if(JOptionPane.YES_OPTION == opcion) this.dispose();
+            
+            return;
+        }
+        
+        this.dispose();
+    }//GEN-LAST:event_formWindowClosing
+
+    private void cambiar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiar1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cambiar1ActionPerformed
+
+    private void regimenesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regimenesActionPerformed
+        CambiarRegimenes cr = new CambiarRegimenes(null, rootPaneCheckingEnabled, c, cliente);
+        this.dispose();
+        cr.setVisible(true);
+    }//GEN-LAST:event_regimenesActionPerformed
 
     /**
      * @param args the command line arguments
@@ -493,6 +577,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     private javax.swing.JTextField FNombre;
     private javax.swing.JTextField FRFC;
     private javax.swing.JButton cambiar;
+    private javax.swing.JButton cambiar1;
     private javax.swing.JCheckBox checkCP;
     private javax.swing.JCheckBox checkContador;
     private javax.swing.JCheckBox checkCorreo;
@@ -517,6 +602,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;
+    private javax.swing.JButton regimenes;
     // End of variables declaration//GEN-END:variables
 
 

@@ -155,7 +155,6 @@ public class Index extends javax.swing.JFrame {
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         BuscarCliente bc = new BuscarCliente(this, rootPaneCheckingEnabled,c);
-        this.setVisible(false);
         bc.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 

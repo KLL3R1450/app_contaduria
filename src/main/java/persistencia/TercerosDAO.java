@@ -113,15 +113,20 @@ public class TercerosDAO {
     }
     
     private boolean terceroRegimen(int idTercero, int idRegimen){
-        String sql = "SELECT id_tercero FROM regiemenes_terceros WHERE id_tercero = ? AND id_regimen = ?";
+        String sql = "SELECT id_regimen FROM regiemenes_terceros WHERE id_tercero = ?";
         
         try(PreparedStatement tr = conexion.prepareStatement(sql)){
+            tr.setInt(1, idTercero);
+            
             ResultSet rs = tr.executeQuery();
-            if(rs.next()) {
-                rs.close();
-                tr.close();
-                return true;
+            
+            while(rs.next()){
+                if(rs.getInt(1) == idRegimen){
+                    rs.close();
+                    return true;
+                }
             }
+                
             
         }catch(SQLException ex){
             JOptionPane.showMessageDialog(null, "Error al obtener regimen y tercero: " + ex.getMessage());
