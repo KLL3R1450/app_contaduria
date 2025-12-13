@@ -22,9 +22,9 @@ public class AñadirCliente extends javax.swing.JDialog {
     private static Controlador c;
     private DefaultListModel<String> modeloActuales;
     private DefaultListModel<String> modeloDisponibles;
-    private ArrayList<Regimenes> añadidos;
-    private ArrayList<Regimenes> quitados;
-    private ArrayList<Regimenes> all;
+    private ArrayList<Object> añadidos;
+    private ArrayList<Object> quitados;
+    private ArrayList<Object> all;
     private Clickeo l;
     
     
@@ -37,7 +37,7 @@ public class AñadirCliente extends javax.swing.JDialog {
         modeloDisponibles = new DefaultListModel<>();
         añadidos = new ArrayList<>();
         quitados = new ArrayList<>();
-        all = c.getRegimenes();
+        all = new ArrayList<>();
         l = new Clickeo(modeloActuales, modeloDisponibles, añadidos, quitados, all, listaA, ListaD);
         
         ListaD.setModel(modeloDisponibles);
@@ -52,7 +52,10 @@ public class AñadirCliente extends javax.swing.JDialog {
     
     private void setRegimenes(){
         
-        for(Regimenes r : all)  modeloDisponibles.addElement(r.regimen);
+        for(Regimenes r : c.getRegimenes()) {
+            all.add(r);
+            modeloDisponibles.addElement(r.regimen);
+        }
         
     }
     
@@ -387,7 +390,7 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         ArrayList<Integer> idReg = new ArrayList<>();
         
-        for(Regimenes regimen : añadidos) idReg.add(regimen.getId());
+        for(Object regimen : añadidos) idReg.add(((Regimenes)regimen).getId());
         
         Cliente cliente = new Cliente(
                 TNom.getText(), 

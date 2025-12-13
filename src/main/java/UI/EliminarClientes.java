@@ -1,73 +1,68 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
 package UI;
 
-import controlador.Controlador;
-import entidades.Cliente;
-import entidades.Regimenes;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
+import controlador.Controlador;
+import entidades.Cliente;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author Osmar
  */
-public class CambiarRegimenes extends javax.swing.JDialog {
+public class EliminarClientes extends javax.swing.JDialog {
 
-    private static Controlador c;
-    private static Cliente cliente;
-    private DefaultListModel<String> modeloActuales;
-    private DefaultListModel<String> modeloDisponibles;
+    private DefaultListModel<String> modeloA;
+    private DefaultListModel<String> modeloD;
     private ArrayList<Object> añadidos;
     private ArrayList<Object> quitados;
     private ArrayList<Object> all;
     private Clickeo l;
+    private static Controlador c;
     
-    public CambiarRegimenes(java.awt.Frame parent, boolean modal,Controlador controler, Cliente client) {
+    public EliminarClientes(java.awt.Frame parent, boolean modal, Controlador controler) {
         super(parent, modal);
         initComponents();
-        
         c = controler;
-        cliente = client;
-        modeloActuales = new DefaultListModel();
-        modeloDisponibles = new DefaultListModel();
-        all = new ArrayList<>();
+        modeloA = new DefaultListModel<>();
+        modeloD = new DefaultListModel<>();
         añadidos = new ArrayList<>();
         quitados = new ArrayList<>();
+        all = new ArrayList<>();
+        setListaClientes();
         
-        l = new Clickeo(modeloActuales, modeloDisponibles, añadidos, quitados, all, listaA, ListaD);
+        l = new Clickeo(modeloA, modeloD, añadidos, quitados, all, listaA, ListaD);
         
-        listaA.setModel(modeloActuales);
-        ListaD.setModel(modeloDisponibles);
+        listaA.setModel(modeloA);
+        ListaD.setModel(modeloD);
         
         listaA.addMouseListener(l);
         ListaD.addMouseListener(l);
-                
-        setRegimenes();
     }
-
-    private void setRegimenes(){
-        
-        for(Regimenes r : c.getRegimenes()){
-            all.add(r);
-            if(cliente.idsRegimenes.contains(r.getId())){
-                modeloActuales.addElement(r.regimen);
-            }
-            else{
-                modeloDisponibles.addElement(r.regimen);
-            }
+    
+    private void setListaClientes(){
+        for(Cliente cli : c.getAllClientes().values()){
+            all.add(cli);
+            añadidos.add(cli);
+            
+            modeloA.addElement(cli.nombre);
         }
     }
     
     private void limpiarTodo(){
-        modeloActuales.removeAllElements();
-        modeloDisponibles.removeAllElements();
+        modeloA.removeAllElements();
+        modeloD.removeAllElements();
         all.clear();
         quitados.clear();
         añadidos.clear();
-        setRegimenes();
         l.setHayCambios(false);
+        setListaClientes();
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -83,9 +78,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         ListaD = new javax.swing.JList<>();
-        quitarR = new javax.swing.JButton();
-        añadirR = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -106,36 +99,18 @@ public class CambiarRegimenes extends javax.swing.JDialog {
             }
         });
 
-        listaA.setMaximumSize(new java.awt.Dimension(237, 89));
-        listaA.setMinimumSize(new java.awt.Dimension(237, 89));
         jScrollPane1.setViewportView(listaA);
 
-        jLabel1.setText("Regimenes Actuales");
+        jLabel1.setText("Clientes Actuales");
 
-        jLabel2.setText("Regimenes Disponibles");
+        jLabel2.setText("Clientes a Eliminar");
 
-        ListaD.setMaximumSize(new java.awt.Dimension(237, 89));
-        ListaD.setMinimumSize(new java.awt.Dimension(237, 89));
         jScrollPane2.setViewportView(ListaD);
 
-        quitarR.setText(">>>");
-        quitarR.addActionListener(new java.awt.event.ActionListener() {
+        jButton1.setText("Eliminar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quitarRActionPerformed(evt);
-            }
-        });
-
-        añadirR.setText("<<<");
-        añadirR.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                añadirRActionPerformed(evt);
-            }
-        });
-
-        jButton3.setText("Guardar Cambios");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -198,44 +173,33 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 88, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addGap(20, 20, 20))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(95, 95, 95)
-                .addComponent(quitarR, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(añadirR, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(135, 135, 135))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(237, 237, 237)
-                .addComponent(jButton3)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane2)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(11, 11, 11)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                .addGap(22, 22, 22)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(quitarR)
-                    .addComponent(añadirR))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         pack();
@@ -255,48 +219,39 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem11ActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        for(Object r : añadidos){
-            String s = c.addRegimenACliente(cliente.id_persona, ((Regimenes)r).getId());
-            if(!s.equals("correcto")){
-                JOptionPane.showMessageDialog(rootPane, s);
-                return;
-            }
-        }
-        
-        for(Object r : quitados){
-            String s = c.deleteRegimenACliente(cliente.id_persona, ((Regimenes)r).getId());
-            if(!s.equals("correcto")) {
-                JOptionPane.showMessageDialog(rootPane, s);
-                return;
-            }
-        }
-        
-        limpiarTodo();
-        JOptionPane.showMessageDialog(rootPane, "Cambios exitosos");
-        
-        
-    }//GEN-LAST:event_jButton3ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+       int i = JOptionPane.showConfirmDialog(rootPane,"Estas seguro de eliminar el/los registro(s) ??");
+       
+       if(JOptionPane.YES_OPTION == i){
+           String request = "";
+           
+           for(Object o : quitados){
+              request = c.deleteCliente(((Cliente)o).id_persona);
+              
+              if(!"correcto".equals(request)){
+                  JOptionPane.showMessageDialog(rootPane, request);
+                  return;
+              }
+              
+           }
+           
+           limpiarTodo();
+           JOptionPane.showMessageDialog(rootPane, "Eliminacion exitosa");
+       }
+       
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         if(l.getHayCambios()){
-            int respuesta = JOptionPane.showConfirmDialog(rootPane, "Hay cambios, esta seguro de salir??");
-            if(JOptionPane.YES_OPTION == respuesta){
-                this.dispose();
-            }
-            return;
+            int i = JOptionPane.showConfirmDialog(rootPane, "Deseas salir: ");
+            
+            if(i == JOptionPane.YES_OPTION) this.dispose();
+            
+            else return;
         }
         
         this.dispose();
     }//GEN-LAST:event_formWindowClosing
-
-    private void añadirRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_añadirRActionPerformed
-
-    }//GEN-LAST:event_añadirRActionPerformed
-
-    private void quitarRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarRActionPerformed
-
-    }//GEN-LAST:event_quitarRActionPerformed
 
     /**
      * @param args the command line arguments
@@ -315,20 +270,20 @@ public class CambiarRegimenes extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CambiarRegimenes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CambiarRegimenes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CambiarRegimenes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CambiarRegimenes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                CambiarRegimenes dialog = new CambiarRegimenes(new javax.swing.JFrame(), true,c,cliente);
+                EliminarClientes dialog = new EliminarClientes(new javax.swing.JFrame(), true, c);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -342,8 +297,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> ListaD;
-    private javax.swing.JButton añadirR;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
@@ -360,10 +314,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JList<String
-    > listaA;
-    private javax.swing.JButton quitarR;
+    private javax.swing.JList<String> listaA;
     // End of variables declaration//GEN-END:variables
-
-    
 }
