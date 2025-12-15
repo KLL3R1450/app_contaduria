@@ -6,6 +6,7 @@ package UI;
 
 import controlador.Controlador;
 import entidades.Cliente;
+import entidades.Terceros;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.regex.PatternSyntaxException;
@@ -19,22 +20,25 @@ import javax.swing.table.TableRowSorter;
  *
  * @author Osmar
  */
-public class BuscarCliente extends javax.swing.JDialog {
+public class BuscarPersonas extends javax.swing.JDialog {
 
     private DefaultTableModel dtm;
     private static Controlador c;
     private TableRowSorter acomodador ;
     private Eventos l;
+    private String tipoPersona;
+    private int idPersona;
     
     /**
      * Creates new form BuscarCliente
      */
-    public BuscarCliente(java.awt.Frame parent, boolean modal, Controlador controler) {
+    public BuscarPersonas(java.awt.Frame parent, boolean modal, Controlador controler, String tp) {
         super(parent, modal);
         initComponents();
         l = new Eventos();
         
         c = controler;
+        tipoPersona = tp;
           
         dtm = (DefaultTableModel) tabla.getModel();
                         
@@ -44,7 +48,7 @@ public class BuscarCliente extends javax.swing.JDialog {
         
         campo.getDocument().addDocumentListener(l);
         
-        cargarClientes();
+        cargarPersonas();
         ocultarColumnaId();
         
     }
@@ -55,23 +59,83 @@ public class BuscarCliente extends javax.swing.JDialog {
         tabla.getColumnModel().getColumn(0).setPreferredWidth(0);
     }
     
-    private void cargarClientes(){
-        for(Cliente cliente : c.getAllClientes().values()){  
-            dtm.addRow( 
-                new Object[]{
-                    cliente.id_persona,cliente.nombre
-                }
+    private void cargarPersonas(){
+        boolean nulo = false;
+        
+        while(dtm.getRowCount() != 0){
+            dtm.removeRow(0);
+        }
+        
+        if("clientes".equals(tipoPersona)){
+            for(Cliente cliente : c.getAllClientes().values()){  
+                dtm.addRow( 
+                    new Object[]{
+                     cliente.id_persona,cliente.nombre
+                    }
             );
             
+            }
         }
+        
+        else if("terceros".equals(tipoPersona)){
+            
+            for(Terceros t : c.getTerceros().values()){
+                
+                dtm.addRow( 
+                        
+                    new Object[]{
+                        t.id_persona,t.nombre
+                    });
+                
+            }
+        }
+        
+        else if("tercerosDe".equals(tipoPersona)){
+            for(Terceros t : c.getTercerosDeCliente(idPersona)){
+                dtm.addRow(
+                        new Object[]{
+                            t.id_persona,t.nombre
+                        }
+                );
+            }
+        }
+        
+        if(dtm.getRowCount() == 0){
+            JOptionPane.showMessageDialog(rootPane, "Este cliente no tiene terceros relacionados");
+        }
+       
     }
     
-    private void detallesCliente(int id){
-        DetallesClientes dc = 
+    protected void setIdPersona(int id){
+        this.idPersona = id;
+    }
+    
+    private void detallesPersonas(int id){
+        if ("clientes".equals(tipoPersona)){
+            
+            DetallesClientes dc = 
                 new DetallesClientes(null, rootPaneCheckingEnabled,
                         c, c.getClienteById(id));
     
-        dc.setVisible(true);
+            dc.setVisible(true);
+        }
+        
+        else if("terceros".equals(tipoPersona)){
+            DetallesTerceros dt = 
+                    new DetallesTerceros(null, rootPaneCheckingEnabled, 
+                            c, c.getTerceroById(id));
+            
+            dt.setVisible(true);
+        }
+        else if("tercerosDe".equals(tipoPersona)){
+            DetallesTerceros dt = 
+                    new DetallesTerceros(null, rootPaneCheckingEnabled, 
+                            c, c.getTerceroById(id));
+            
+            dt.setVisible(true);
+        }
+        
+        cargarPersonas();
     }   
 
     /**
@@ -127,7 +191,7 @@ public class BuscarCliente extends javax.swing.JDialog {
         tabla.setFocusable(false);
         jScrollPane1.setViewportView(tabla);
 
-        jLabel1.setText("Nombre Cliente");
+        jLabel1.setText("Nombre a Buscar");
 
         jMenu1.setText("Inicio");
 
@@ -217,15 +281,15 @@ public class BuscarCliente extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem11ActionPerformed
 
-    private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
-        Index i = new Index(c);
-        this.setVisible(false);
-        i.setVisible(true);
-    }//GEN-LAST:event_jMenuItem10ActionPerformed
-
     private void campoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_campoActionPerformed
+
+    private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
+        Index i = new Index(c);
+        this.dispose();
+        i.setVisible(true);
+    }//GEN-LAST:event_jMenuItem10ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -244,20 +308,21 @@ public class BuscarCliente extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(BuscarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BuscarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(BuscarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BuscarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(BuscarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BuscarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(BuscarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BuscarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                BuscarCliente dialog = new BuscarCliente(new javax.swing.JFrame(), true, c);
+                BuscarPersonas dialog = new BuscarPersonas(new javax.swing.JFrame(), true, c, "");
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -315,7 +380,7 @@ public class BuscarCliente extends javax.swing.JDialog {
                     
                     Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
                     
-                    detallesCliente(id);
+                    detallesPersonas(id);
                     
                 }
             }

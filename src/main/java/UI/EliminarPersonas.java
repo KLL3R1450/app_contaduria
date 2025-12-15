@@ -8,13 +8,14 @@ import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import controlador.Controlador;
 import entidades.Cliente;
+import entidades.Terceros;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author Osmar
  */
-public class EliminarClientes extends javax.swing.JDialog {
+public class EliminarPersonas extends javax.swing.JDialog {
 
     private DefaultListModel<String> modeloA;
     private DefaultListModel<String> modeloD;
@@ -23,8 +24,9 @@ public class EliminarClientes extends javax.swing.JDialog {
     private ArrayList<Object> all;
     private Clickeo l;
     private static Controlador c;
+    private String tipoPersona;
     
-    public EliminarClientes(java.awt.Frame parent, boolean modal, Controlador controler) {
+    public EliminarPersonas(java.awt.Frame parent, boolean modal, Controlador controler, String tp) {
         super(parent, modal);
         initComponents();
         c = controler;
@@ -33,7 +35,9 @@ public class EliminarClientes extends javax.swing.JDialog {
         añadidos = new ArrayList<>();
         quitados = new ArrayList<>();
         all = new ArrayList<>();
-        setListaClientes();
+        tipoPersona = tp;
+        
+        setListaPersonas();
         
         l = new Clickeo(modeloA, modeloD, añadidos, quitados, all, listaA, ListaD);
         
@@ -44,13 +48,25 @@ public class EliminarClientes extends javax.swing.JDialog {
         ListaD.addMouseListener(l);
     }
     
-    private void setListaClientes(){
-        for(Cliente cli : c.getAllClientes().values()){
-            all.add(cli);
-            añadidos.add(cli);
-            
-            modeloA.addElement(cli.nombre);
+    private void setListaPersonas(){
+        if("clientes".equals(tipoPersona)){
+            for(Cliente cli : c.getAllClientes().values()){
+                all.add(cli);
+                añadidos.add(cli);
+
+                modeloA.addElement(cli.nombre);
+            }  
         }
+        
+        else if("terceros".equals(tipoPersona)){
+            for(Terceros t : c.getTerceros().values()){
+                all.add(t);
+                añadidos.add(t);
+                
+                modeloA.addElement(t.nombre);
+            }
+        }
+
     }
     
     private void limpiarTodo(){
@@ -60,7 +76,7 @@ public class EliminarClientes extends javax.swing.JDialog {
         quitados.clear();
         añadidos.clear();
         l.setHayCambios(false);
-        setListaClientes();
+        setListaPersonas();
     }
 
     /**
@@ -226,7 +242,11 @@ public class EliminarClientes extends javax.swing.JDialog {
            String request = "";
            
            for(Object o : quitados){
-              request = c.deleteCliente(((Cliente)o).id_persona);
+              if("clientes".equals(tipoPersona))
+                 request = c.deleteCliente(((Cliente)o).id_persona);  
+              
+              else if("terceros".equals(tipoPersona))
+                  request = c.borrarTercero(((Terceros)o).id_persona);
               
               if(!"correcto".equals(request)){
                   JOptionPane.showMessageDialog(rootPane, request);
@@ -270,20 +290,21 @@ public class EliminarClientes extends javax.swing.JDialog {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(EliminarClientes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(EliminarPersonas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                EliminarClientes dialog = new EliminarClientes(new javax.swing.JFrame(), true, c);
+                EliminarPersonas dialog = new EliminarPersonas(new javax.swing.JFrame(), true, c, "");
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

@@ -330,6 +330,10 @@ public class Controlador implements IControler{
         return clientes.get(id);
     }
     
+    public Terceros getTerceroById(int id){
+        return terceros.get(id);
+    }
+    
     
     public String updateCliente(Cliente c){
         String respuesta = dBClientes.updateCliente(c, c.id_persona);
@@ -338,5 +342,15 @@ public class Controlador implements IControler{
         
         
         return respuesta;  
+    }
+    
+    public String updateTercero(Terceros t){
+        String respuesta = dBTerceros.updateTercero(t);
+        
+        if("correcto".equals(respuesta)){
+            terceros = dBTerceros.getTerceros();
+        }
+        
+        return respuesta;
     }
 }

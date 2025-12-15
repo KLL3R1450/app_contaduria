@@ -2,6 +2,7 @@ package UI;
 
 import controlador.Controlador;
 import entidades.Cliente;
+import entidades.Personas;
 import entidades.Regimenes;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
@@ -14,20 +15,22 @@ import javax.swing.JOptionPane;
 public class CambiarRegimenes extends javax.swing.JDialog {
 
     private static Controlador c;
-    private static Cliente cliente;
+    private static Personas persona;
     private DefaultListModel<String> modeloActuales;
     private DefaultListModel<String> modeloDisponibles;
     private ArrayList<Object> añadidos;
     private ArrayList<Object> quitados;
     private ArrayList<Object> all;
     private Clickeo l;
+    private String tipoPersonas;
     
-    public CambiarRegimenes(java.awt.Frame parent, boolean modal,Controlador controler, Cliente client) {
+    
+    public CambiarRegimenes(java.awt.Frame parent, boolean modal,Controlador controler, Personas p, String tp) {
         super(parent, modal);
         initComponents();
         
         c = controler;
-        cliente = client;
+        persona = p;
         modeloActuales = new DefaultListModel();
         modeloDisponibles = new DefaultListModel();
         all = new ArrayList<>();
@@ -49,7 +52,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         
         for(Regimenes r : c.getRegimenes()){
             all.add(r);
-            if(cliente.idsRegimenes.contains(r.getId())){
+            if(persona.idsRegimenes.contains(r.getId())){
                 modeloActuales.addElement(r.regimen);
             }
             else{
@@ -230,7 +233,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(quitarR)
                     .addComponent(añadirR))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -256,8 +259,13 @@ public class CambiarRegimenes extends javax.swing.JDialog {
     }//GEN-LAST:event_jMenuItem11ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        String s = "";
         for(Object r : añadidos){
-            String s = c.addRegimenACliente(cliente.id_persona, ((Regimenes)r).getId());
+            s =
+               ("clientes".equals(tipoPersonas))
+                ? c.addRegimenACliente(persona.id_persona, ((Regimenes)r).getId())
+                : c.agregarRegimenTercerro(persona.id_persona, ((Regimenes)r).getId()); 
+            
             if(!s.equals("correcto")){
                 JOptionPane.showMessageDialog(rootPane, s);
                 return;
@@ -265,7 +273,10 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         }
         
         for(Object r : quitados){
-            String s = c.deleteRegimenACliente(cliente.id_persona, ((Regimenes)r).getId());
+             s =
+               ("clientes".equals(tipoPersonas))
+                ? c.deleteRegimenACliente(persona.id_persona, ((Regimenes)r).getId())
+                : c.borrarRegimenTerero(persona.id_persona, ((Regimenes)r).getId());
             if(!s.equals("correcto")) {
                 JOptionPane.showMessageDialog(rootPane, s);
                 return;
@@ -328,7 +339,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                CambiarRegimenes dialog = new CambiarRegimenes(new javax.swing.JFrame(), true,c,cliente);
+                CambiarRegimenes dialog = new CambiarRegimenes(new javax.swing.JFrame(), true,c,persona, "");
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

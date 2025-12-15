@@ -33,14 +33,14 @@ public class Index extends javax.swing.JFrame {
         jMenuItem6 = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        BuscarClientes = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
+        AgregarClientes = new javax.swing.JMenuItem();
+        EliminarClientes = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
+        BuscarTerceros = new javax.swing.JMenuItem();
+        AgregarTercero = new javax.swing.JMenuItem();
+        EliminarTerceros = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem11 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -72,7 +72,7 @@ public class Index extends javax.swing.JFrame {
             .addGap(0, 469, Short.MAX_VALUE)
         );
 
-        jMenu1.setText("Clientes");
+        BuscarClientes.setText("Clientes");
 
         jMenuItem2.setText("Buscar");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -80,36 +80,46 @@ public class Index extends javax.swing.JFrame {
                 jMenuItem2ActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem2);
+        BuscarClientes.add(jMenuItem2);
 
-        jMenuItem3.setText("Agregar");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        AgregarClientes.setText("Agregar");
+        AgregarClientes.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
+                AgregarClientesActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem3);
+        BuscarClientes.add(AgregarClientes);
 
-        jMenuItem4.setText("Eliminar");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+        EliminarClientes.setText("Eliminar");
+        EliminarClientes.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+                EliminarClientesActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem4);
+        BuscarClientes.add(EliminarClientes);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(BuscarClientes);
 
         jMenu2.setText("Terceros");
 
-        jMenuItem5.setText("Buscar");
-        jMenu2.add(jMenuItem5);
+        BuscarTerceros.setText("Buscar");
+        BuscarTerceros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BuscarTercerosActionPerformed(evt);
+            }
+        });
+        jMenu2.add(BuscarTerceros);
 
-        jMenuItem7.setText("Agregar");
-        jMenu2.add(jMenuItem7);
+        AgregarTercero.setText("Agregar");
+        jMenu2.add(AgregarTercero);
 
-        jMenuItem8.setText("Eliminar");
-        jMenu2.add(jMenuItem8);
+        EliminarTerceros.setText("Eliminar");
+        EliminarTerceros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EliminarTercerosActionPerformed(evt);
+            }
+        });
+        jMenu2.add(EliminarTerceros);
 
         jMenuBar1.add(jMenu2);
 
@@ -125,7 +135,7 @@ public class Index extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu3);
 
-        jMenu4.setText("Listas");
+        jMenu4.setText("Contadores");
 
         jMenuItem12.setText("Ver listas");
         jMenu4.add(jMenuItem12);
@@ -151,7 +161,7 @@ public class Index extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        BuscarCliente bc = new BuscarCliente(this, rootPaneCheckingEnabled,c);
+        BuscarPersonas bc = new BuscarPersonas(this, rootPaneCheckingEnabled,c, "clientes");
         bc.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
@@ -169,15 +179,25 @@ public class Index extends javax.swing.JFrame {
         if(i == JOptionPane.YES_OPTION) System.exit(0);
     }//GEN-LAST:event_formWindowClosing
 
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    private void AgregarClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AgregarClientesActionPerformed
         AñadirCliente ac = new AñadirCliente(this, rootPaneCheckingEnabled,c);
         ac.setVisible(true);
-    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    }//GEN-LAST:event_AgregarClientesActionPerformed
 
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-       EliminarClientes ec = new EliminarClientes(this, rootPaneCheckingEnabled,c);
+    private void EliminarClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarClientesActionPerformed
+       EliminarPersonas ec = new EliminarPersonas(this, rootPaneCheckingEnabled,c, "clientes");
        ec.setVisible(true);
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
+    }//GEN-LAST:event_EliminarClientesActionPerformed
+
+    private void BuscarTercerosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BuscarTercerosActionPerformed
+        BuscarPersonas bc = new BuscarPersonas(this, rootPaneCheckingEnabled,c, "terceros");
+        bc.setVisible(true);
+    }//GEN-LAST:event_BuscarTercerosActionPerformed
+
+    private void EliminarTercerosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarTercerosActionPerformed
+        EliminarPersonas ep  = new EliminarPersonas(this, rootPaneCheckingEnabled, c, "terceros");
+        ep.setVisible(true);
+    }//GEN-LAST:event_EliminarTercerosActionPerformed
 
     /**
      * @param args the command line arguments
@@ -215,7 +235,12 @@ public class Index extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuItem AgregarClientes;
+    private javax.swing.JMenuItem AgregarTercero;
+    private javax.swing.JMenu BuscarClientes;
+    private javax.swing.JMenuItem BuscarTerceros;
+    private javax.swing.JMenuItem EliminarClientes;
+    private javax.swing.JMenuItem EliminarTerceros;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
@@ -224,12 +249,7 @@ public class Index extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }

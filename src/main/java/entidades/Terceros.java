@@ -31,5 +31,12 @@ public class Terceros extends Personas{
         this.id_persona = id_tercero;
     }
     
+    public void updateTercero(String nombre, String rfc, String cp, String correo){
+        this.nombre = nombre;
+        this.rfc = rfc;
+        this.cp = cp;
+        this.correo = correo;
+    }
+    
 
 }

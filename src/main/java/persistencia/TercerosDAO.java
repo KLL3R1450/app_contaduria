@@ -73,7 +73,7 @@ public class TercerosDAO {
     }
     
     private boolean clienteTercero(int idTercero, int idCliente){
-        String sql = "SELECT id_tercero FROM terceros_clientes_view WHERE id_cliente = ? AND id_tercero = ?";
+        String sql = "SELECT id_tercero FROM terceros_clientes WHERE id_cliente = ? AND id_tercero = ?";
         
         try(PreparedStatement ct = conexion.prepareStatement(sql)){
             ResultSet rs =  ct.executeQuery();
@@ -137,7 +137,7 @@ public class TercerosDAO {
     }
     
     private String insertarRegimenes(int idTercero, ArrayList<Integer> regimenes){
-        String sql = "INSERT INTO regimenes_clientes VALUES (?,?)";
+        String sql = "INSERT INTO regimenes_terceros VALUES (?,?)";
         
         try(PreparedStatement ir = conexion.prepareStatement(sql)){
             for(Integer r : regimenes){
@@ -181,10 +181,10 @@ public class TercerosDAO {
             
             while(rs.next()){
                 Terceros t = new Terceros(rs.getInt("id_tercero"));
-                t.nombre = rs.getString("nombre_cliente");
-                t.rfc = rs.getString("rfc_cliente");
-                t.cp = rs.getString("cp_cliente");
-                t.correo = rs.getString("correo_cliente");
+                t.nombre = rs.getString("nombre_tercero");
+                t.rfc = rs.getString("rfc_tercero");
+                t.cp = rs.getString("cp_tercero");
+                t.correo = rs.getString("correo_tercero");
                 
                 listaTerceros.put(t.id_persona,t);                
             }
@@ -258,4 +258,21 @@ public class TercerosDAO {
         }
     }
     
+    public String updateTercero(Terceros t){
+        String sql = "UPDATE terceros SET nombre_tercero = ?, rfc_tercero = ?, cp_tercero = ?, correo_tercero = ? WHERE id_tercero = ?";
+        
+        try(PreparedStatement ut = conexion.prepareStatement(sql)){
+            ut.setString(1, t.nombre);
+            ut.setString(2, t.rfc);
+            ut.setString(3, t.cp);
+            ut.setString(4, t.correo);
+            ut.setInt(5, t.id_persona);
+            
+            ut.executeUpdate();
+            
+            return "correcto";
+        }catch(SQLException ex){
+            return "Error al actualizar el tercero: " + ex.getMessage();
+        }
+    }
 }
