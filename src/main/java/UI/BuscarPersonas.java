@@ -6,6 +6,7 @@ package UI;
 
 import controlador.Controlador;
 import entidades.Cliente;
+import entidades.EFirmas;
 import entidades.Terceros;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -66,7 +67,7 @@ public class BuscarPersonas extends javax.swing.JDialog {
             dtm.removeRow(0);
         }
         
-        if("clientes".equals(tipoPersona)){
+        if("clientes".equals(tipoPersona) || "firmas".equals(tipoPersona)){
             for(Cliente cliente : c.getAllClientes().values()){  
                 dtm.addRow( 
                     new Object[]{
@@ -99,6 +100,7 @@ public class BuscarPersonas extends javax.swing.JDialog {
                 );
             }
         }
+        
         
         if(dtm.getRowCount() == 0){
             JOptionPane.showMessageDialog(rootPane, "Este cliente no tiene terceros relacionados");
@@ -133,6 +135,18 @@ public class BuscarPersonas extends javax.swing.JDialog {
                             c, c.getTerceroById(id));
             
             dt.setVisible(true);
+        }
+        else if("firmas".equals(tipoPersona)){
+            EFirmas efirma = c.getFirmaDe(id);
+            
+            if(efirma == null)
+                JOptionPane.showMessageDialog(rootPane, "El cliente no cuenta con EFirma registrada en el sistema");
+            
+            else{
+                /*DetallesFirma df = new DetallesFirma(null,rootPaneCheckingEnabled, c, c.getClienteById(id));
+                df.setVisible(true);*/
+            }
+            
         }
         
         cargarPersonas();

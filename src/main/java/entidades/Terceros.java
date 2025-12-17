@@ -20,11 +20,11 @@ public class Terceros extends Personas{
         this.correo = correo;
     }
 
-    public Terceros(int id_tercero, String nombre, String rfc, String cp) {
-        this.id_persona = id_tercero;
+    public Terceros( String nombre, String rfc, String cp, String correo) {
         this.nombre = nombre;
         this.rfc = rfc;
         this.cp = cp;
+        this.correo = correo;
     }
     
     public Terceros(int id_tercero){

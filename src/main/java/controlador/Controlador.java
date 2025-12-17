@@ -263,6 +263,10 @@ public class Controlador implements IControler{
         return respuesta;
     }
     
+    public EFirmas getFirmaDe(int idCliente){
+        return(eFirmas.containsKey(idCliente)) ? eFirmas.get(idCliente) : null;
+    }
+    
     public String insertarDeclaracion(int id_cliente, int anio, int mes){
         String respuesta = dBDeclaraciones.insertDeclaracion(id_cliente, anio, mes);
         

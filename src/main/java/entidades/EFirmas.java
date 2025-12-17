@@ -22,4 +22,6 @@ public class EFirmas {
     public int getIdCliente(){
         return id_cliente;
     }
+    
+    
 }

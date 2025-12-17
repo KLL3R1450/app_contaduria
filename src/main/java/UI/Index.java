@@ -43,6 +43,7 @@ public class Index extends javax.swing.JFrame {
         EliminarTerceros = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem12 = new javax.swing.JMenuItem();
 
@@ -111,6 +112,11 @@ public class Index extends javax.swing.JFrame {
         jMenu2.add(BuscarTerceros);
 
         AgregarTercero.setText("Agregar");
+        AgregarTercero.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AgregarTerceroActionPerformed(evt);
+            }
+        });
         jMenu2.add(AgregarTercero);
 
         EliminarTerceros.setText("Eliminar");
@@ -132,6 +138,14 @@ public class Index extends javax.swing.JFrame {
             }
         });
         jMenu3.add(jMenuItem11);
+
+        jMenuItem3.setText("Buscar");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem3);
 
         jMenuBar1.add(jMenu3);
 
@@ -199,6 +213,17 @@ public class Index extends javax.swing.JFrame {
         ep.setVisible(true);
     }//GEN-LAST:event_EliminarTercerosActionPerformed
 
+    private void AgregarTerceroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AgregarTerceroActionPerformed
+        añadirTercero at = new añadirTercero(this, rootPaneCheckingEnabled, c);
+        at.setVisible(true);
+    }//GEN-LAST:event_AgregarTerceroActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        BuscarPersonas bp = new BuscarPersonas(this, rootPaneCheckingEnabled, c, "firmas");
+        bp.setVisible(true);
+        
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -249,6 +274,7 @@ public class Index extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables

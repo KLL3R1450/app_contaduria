@@ -40,14 +40,17 @@ public class TercerosDAO {
             
             if(id > 0 && !t.idsRegimenes.isEmpty()){
                 
-                String clientesTercero = relacionarClientes(id, clientes);
-                String clientesRegimenes = insertarRegimenes(id, t.idsRegimenes);
+                if(!clientes.isEmpty()){
+                    String clientesTercero = relacionarClientes(id, clientes);
                 
-                if(!"correcto".equals(clientesTercero)){
-                    conexion.rollback();
-                    return clientesTercero;
+                
+                    if(!"correcto".equals(clientesTercero)){
+                        conexion.rollback();
+                        return clientesTercero;
+                    }
                 }
                 
+                String clientesRegimenes = insertarRegimenes(id, t.idsRegimenes);
                 
                 if(!"correcto".equals(clientesRegimenes)){
                     conexion.rollback();
