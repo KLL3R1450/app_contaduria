@@ -14,8 +14,14 @@ import javax.swing.JOptionPane;
  * @author Osmar
  */
 public class EFirmasDAO {
+    //Conexion con la base de datos
     private final Connection conexion = ConectorBD.getConexion();
     
+    /**
+     * Obtiene todas las Efirmas que se tengan el la base de datos
+     * @return Un Map con las Efirmas 
+     * @deprecated 
+     */
     public Map<Integer,EFirmas> getAllFirmas(){
         String sql = "SELECT fecha_expiracion,fecha_renovacion,id_cliente FROM e_firmas";
         Map<Integer,EFirmas> firmas = new HashMap<>();
@@ -38,6 +44,14 @@ public class EFirmasDAO {
         return firmas;
     }
     
+    /***
+     * Renueva una Efirma en la base de datos
+     * @param fechaExpiracion Variable de tipo String con la nueva fecha de expiracion
+     * @param fechaRenovacion Variable de tipo String con la fecha de renovacion
+     * @param id_cliente Variable de tipo int que contien el ide del cliente dueño de la Efirma
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String renovacion(String fechaExpiracion,String fechaRenovacion, int id_cliente){
         String sql = "UPDATE e_firmas SET fecha_expiracion = ?, fecha_renovacion = ? WHERE id_cliente = ?";
         

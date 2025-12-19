@@ -86,8 +86,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         ListaD = new javax.swing.JList<>();
-        quitarR = new javax.swing.JButton();
-        añadirR = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -120,20 +118,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         ListaD.setMaximumSize(new java.awt.Dimension(237, 89));
         ListaD.setMinimumSize(new java.awt.Dimension(237, 89));
         jScrollPane2.setViewportView(ListaD);
-
-        quitarR.setText(">>>");
-        quitarR.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quitarRActionPerformed(evt);
-            }
-        });
-
-        añadirR.setText("<<<");
-        añadirR.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                añadirRActionPerformed(evt);
-            }
-        });
 
         jButton3.setText("Guardar Cambios");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
@@ -211,12 +195,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
                     .addComponent(jLabel2))
                 .addGap(20, 20, 20))
             .addGroup(layout.createSequentialGroup()
-                .addGap(95, 95, 95)
-                .addComponent(quitarR, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(añadirR, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(135, 135, 135))
-            .addGroup(layout.createSequentialGroup()
                 .addGap(237, 237, 237)
                 .addComponent(jButton3)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -232,22 +210,16 @@ public class CambiarRegimenes extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(quitarR)
-                    .addComponent(añadirR))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(42, 42, 42)
                 .addComponent(jButton3)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
-        Index i = new Index(c);
-        this.setVisible(false);
-        i.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_jMenuItem10ActionPerformed
 
     private void jMenuItem9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem9ActionPerformed
@@ -301,14 +273,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_formWindowClosing
 
-    private void añadirRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_añadirRActionPerformed
-
-    }//GEN-LAST:event_añadirRActionPerformed
-
-    private void quitarRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarRActionPerformed
-
-    }//GEN-LAST:event_quitarRActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -353,7 +317,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> ListaD;
-    private javax.swing.JButton añadirR;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -373,7 +336,6 @@ public class CambiarRegimenes extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList<String
     > listaA;
-    private javax.swing.JButton quitarR;
     // End of variables declaration//GEN-END:variables
 
     

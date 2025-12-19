@@ -13,8 +13,17 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 public class ClientesDAO {
+    
+    //Instancia de conexion a la base de datos directa de ConectorBD
     private Connection conexion = ConectorBD.getConexion();
     
+    /**
+     * Clase que agrega un registro en la tabla clientes y ademas le agrega los respectivos regimenes en 
+     * la tabla regimenes-clientes
+     * @param cliente Instancia de tipo Cliente que contiene los datos a insertar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regesa
+     * "correcto"
+     */
     public String insertCliente(Cliente cliente){
         String sql = "INSERT INTO clientes(nombre_cliente,rfc_cliente,cp_cliente,correo_cliente,m_honorarios_cliente,id_contador,id_estado) VALUES (?,?,?,?,?,?,?)";
         int id = -1;
@@ -80,6 +89,12 @@ public class ClientesDAO {
         
     }
     
+    /**
+     * Funcion de apoyo para @insertCliente que ayuda en la insercion de regimenes 
+     * @param id Id del cliente al cual le relacionaremos los regimenes
+     * @param regimenes Variable de tipo ArrayList que contiene todos los ids de los regimenes a relacionar
+     * @throws SQLException
+     */
     private void insertRegimenesClientes(int id, ArrayList<Integer> regimenes) throws SQLException{
         String sql = "INSERT INTO regimenes_clientes(id_cliente,id_regimen) VALUES (?,?)";
         
@@ -97,6 +112,12 @@ public class ClientesDAO {
         } 
     }
     
+    
+    /***
+     * Funcion que retorna todos los clientes, con estatus de Activo, y los guarda en una varible de tipo 
+     * Map para su facilidad de busqueda por ID
+     * @return Un Map de tipo Integer,Cliente con todos los clientes activos
+     */
     public Map<Integer,Cliente> getClientes(){
         String sql = "SELECT * FROM clientes WHERE id_estado = 1";
         Map<Integer,Cliente> cls = new HashMap<>();
@@ -147,6 +168,13 @@ public class ClientesDAO {
         return cls;
     }
     
+    /**
+     * Elimina un Regimen del cliente especificado de la tabla Regimenes-Clientes
+     * @param idCliente Id del cliente al que se le eliminara el regimen
+     * @param idRegimen Id del Regimen a eliminar de dicho cliente
+     * "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regesa
+     * "correcto"
+     */
     public String deleteRegimenCliente(int idCliente, int idRegimen){
         String sql = "DELETE FROM regimenes_clientes WHERE id_cliente = ? AND id_regimen = ?";
         
@@ -163,6 +191,13 @@ public class ClientesDAO {
         }
     }
     
+    /***
+     * Comprueba si un regimen ya esta relacionado con un cliente, es funcion de apoyo para la funcion
+     * @see ClientesDAO.agregarRegimenCliente()
+     * @param idCliente Id del cliente a comprobar su relacion con el regimen
+     * @param idRegimen Id del regimen a comprobar su relacion con el cliente
+     * @return Retorna un valor de tipo Boolean
+     */
     private boolean regimenYaExistente(int idCliente, int idRegimen){
         String sql = "SELECT id_regimen FROM regimenes_clientes WHERE id_cliente = ?";
         
@@ -188,6 +223,13 @@ public class ClientesDAO {
         
     }
     
+    /***
+     * Funcion para agregar un regimen a un cliente en especifico
+     * @param idCliente Variable de tipo int que contiene el id del cliente a relacionar
+     * @param idRegimen Variable de tipo int que contiene el id del regimen a relacionar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String agregarRegimenCliente(int idCliente, int idRegimen){
         if(regimenYaExistente(idCliente, idRegimen)) return "El regimen ya existe para este cliente";
         
@@ -205,9 +247,16 @@ public class ClientesDAO {
         }catch(SQLException ex){
             return "Fallo al agregar el regimen: " + ex.getMessage();
         }
-        
+            
     }
     
+    /***
+     * Funcion que retorna los Ids de los terceros relacionados con un cliente especifico en la tabla 
+     * terceros_clientes
+     * @param idCliente Variable de tipo int que contiene el Id del cliente del cual buscaremos sus terceros
+     * @return retorna una variable de tipo ArrayList con los Ids de los terceros
+     * en caso de no tener se regresa un ArrayList vacio
+     */
     public ArrayList<Integer>  getTercerosCliente(int idCliente){
         ArrayList<Integer> ter = new ArrayList<>();
         
@@ -231,6 +280,12 @@ public class ClientesDAO {
         return ter;
     }
     
+    /**
+     * Funcion que "Elimina" un cliente, solo le cambia el estado de Activo a Baja 
+     * @param idCliente Variable de tipo int que contiene el Id del cliente a "Eliminar"
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String deleteCliente(int idCliente){
         String sql = "UPDATE clientes SET id_estado = 2 WHERE id_cliente = ?";
         
@@ -246,6 +301,11 @@ public class ClientesDAO {
         }
     }
     
+    /**
+     * Funcion que obtiene los clientes que estan relacionados con un contador en especifico
+     * @param idContador Variable de tipo int que contiene el Id del contador del cual buscaremos sus clientes
+     * @return Una variable de tipo ArrayList con los Ids de los clientes del contador especificado
+     */
     protected ArrayList<Integer> getClientesDeContador(int idContador){
         ArrayList<Integer> listaClientes = new ArrayList<>();
         
@@ -270,6 +330,13 @@ public class ClientesDAO {
     
     // Funciones nuevas
     
+    /**
+     * Funcion que "Modifica" los valores de un registro de cliente en especifico
+     * @param c Instancia de tipo Cliente que contiene los datos nuevos 
+     * @param idCliente Variable de tipo int que contiene el id del cliente a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String updateCliente(Cliente c, int idCliente){
         String sql = "UPDATE clientes SET nombre_cliente = ?, cp_cliente = ?, correo_cliente = ?, m_honorarios_cliente = ?, id_contador = ? WHERE id_cliente = ?";
         

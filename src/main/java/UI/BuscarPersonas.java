@@ -300,9 +300,7 @@ public class BuscarPersonas extends javax.swing.JDialog {
     }//GEN-LAST:event_campoActionPerformed
 
     private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
-        Index i = new Index(c);
         this.dispose();
-        i.setVisible(true);
     }//GEN-LAST:event_jMenuItem10ActionPerformed
 
     /**

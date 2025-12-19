@@ -17,8 +17,13 @@ import javax.swing.JOptionPane;
  * @author Osmar
  */
 public class RegimenesDAO {
+    //Conexion con la base de datos
     private static final Connection conexion = ConectorBD.getConexion();
     
+    /**
+     * Obtiene todos los regimenes que se tienen en la base de datos
+     * @return Un ArrayList con todos los registros
+     */
     public  ArrayList<Regimenes> getRegimenes(){
         ArrayList<Regimenes> regimenes = new ArrayList<>();
         String sql = "SELECT * FROM regimenes";
@@ -38,6 +43,12 @@ public class RegimenesDAO {
         return regimenes;
     }
     
+    /**
+     * Funcion que añade un regimen a la base de datos
+     * @param r Variable de tipo String con el nombre del nuevo regimen
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String addRegimen(Regimenes r){
         String sql = "INSERT INTO regimenes(des_regimen) values (?)";
         
@@ -52,6 +63,12 @@ public class RegimenesDAO {
         }
     }
     
+    /**
+     * Funcion que elimina un regimen de la base de datos
+     * @param idRegimen Variable de tipo int con el id del regimen a eliminar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String deleteRegimen(int idRegimen){
         String sql = "DELETE FROM regimenes WHERE id_regimen = ?";
         

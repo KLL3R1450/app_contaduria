@@ -14,8 +14,16 @@ import javax.swing.JOptionPane;
 
 
 public class TercerosDAO {
+    //Conexion con la base de datos
     private final Connection conexion = ConectorBD.getConexion();
     
+    /***
+     * Funcion que inserta un tercero
+     * @param t Variable de tipo Terceros que contiene los datos del nuevo tercero
+     * @param clientes Variable de tipo ArrayList que contiene los ids de los clientes que contienen este tercero
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String insertTercero(Terceros t, ArrayList<Integer> clientes){
         String sql = "INSERT INTO terceros(nombre_tercero,rfc_tercero,cp_tercero,correo_tercero) VALUES (?,?,?,?)";
         int id = -1;
@@ -75,6 +83,12 @@ public class TercerosDAO {
         }
     }
     
+    /***
+     * Funcion que comprueba si un tercero ya tiene un cliente relacionado
+     * @param idTercero Variable de tipo int con el id de tercero a buscar
+     * @param idCliente Variable de tipo int con el id del cliente a buscar
+     * @return True o False dependiendo el caso
+     */
     private boolean clienteTercero(int idTercero, int idCliente){
         String sql = "SELECT id_tercero FROM terceros_clientes WHERE id_cliente = ? AND id_tercero = ?";
         
@@ -94,6 +108,13 @@ public class TercerosDAO {
         return false;
     }
     
+    /***
+     * Funcion que relaciona clientes con un tercero en especifico
+     * @param idTercero Variable de tipo int que contiene el id del tercero a relacionar
+     * @param clientes Variable de tipo "ArrayList" con los ids de los clientes que tienen este tercero
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String relacionarClientes(int idTercero, ArrayList<Integer> clientes){
         String sql = "INSERT INTO terceros_clientes VALUES (?,?)";
         
@@ -115,6 +136,12 @@ public class TercerosDAO {
         return "correcto";
     }
     
+    /***
+     * Funcion de apoyo para saber si un tercero ya tiene un regimen
+     * @param idTercero Variable de tipo int que contiene el id del tercero a buscar
+     * @param idRegimen Variable de tipo int que contiene el id del regimen a buscar
+     * @return True o False dependiendo de resultado
+     */
     private boolean terceroRegimen(int idTercero, int idRegimen){
         String sql = "SELECT id_regimen FROM regiemenes_terceros WHERE id_tercero = ?";
         
@@ -139,6 +166,14 @@ public class TercerosDAO {
         return false;
     }
     
+    
+    /***
+     * Funcion de apoyo que inserta la relacion de un tercero con sus regimenes
+     * @param idTercero Variable de tipo int con el id del tercero a relacionar
+     * @param regimenes Variable de tipo ArrayList con los ids de los regimenes a encolar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     private String insertarRegimenes(int idTercero, ArrayList<Integer> regimenes){
         String sql = "INSERT INTO regimenes_terceros VALUES (?,?)";
         
@@ -158,6 +193,12 @@ public class TercerosDAO {
         }
     }
     
+    /**
+     * Funcion que "Elimina" un tercero
+     * @param idTercero Variable de tipo int con el id del tercero a eliminar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String borrarTercero(int idTercero){
         String sql = "UPDATE terceros SET id_estado = 3 WHERE id_tercero = ?";
         
@@ -173,6 +214,10 @@ public class TercerosDAO {
         }
     }
     
+    /**
+     * Funcion que regresa todos los terceros activos de la base de datos
+     * @return Un Map con los terceros 
+     */
     public Map<Integer,Terceros> getTerceros(){
         Map<Integer, Terceros> listaTerceros = new HashMap<>();
                 
@@ -226,6 +271,13 @@ public class TercerosDAO {
         return listaTerceros;
     }
     
+    /***
+     * Funcion que elimina un regimen de un tercero
+     * @param idTercero Variable de tipo int con el id del tercero a eliminar el regimen
+     * @param idRegimen Variable de tipo int con el id del regimen a eliminar 
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String eliminarRegimenTercero(int idTercero, int idRegimen){
         String sql = "DELETE FROM regimenes_clientes WHERE id_tercero = ? AND  id_regimen = ?";
         
@@ -243,6 +295,13 @@ public class TercerosDAO {
         }
     }
     
+    /***
+     * Funcion que inserta un regimen de un tercero
+     * @param idTercero Variable de tipo int con el id del tercero a insertar el regimen
+     * @param idRegimen Variable de tipo int con el id del regimen a insertar 
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String insertarRegimenTerero(int idTercero, int idRegimen){
         String sql = "INSERT INTO regimenes_tercero VALUES (?,?)";
         
@@ -261,6 +320,13 @@ public class TercerosDAO {
         }
     }
     
+    
+   /***
+    * Variable que modifica un registro en la tabla terceros
+    * @param t Variable de tipo Terceros que contiene los nuevos datos 
+    * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+    * "correcto"
+    */
     public String updateTercero(Terceros t){
         String sql = "UPDATE terceros SET nombre_tercero = ?, rfc_tercero = ?, cp_tercero = ?, correo_tercero = ? WHERE id_tercero = ?";
         

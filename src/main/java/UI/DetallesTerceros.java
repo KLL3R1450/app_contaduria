@@ -390,9 +390,7 @@ public class DetallesTerceros extends javax.swing.JDialog {
     }//GEN-LAST:event_regimenesActionPerformed
 
     private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
-        Index i = new Index(c);
-        this.setVisible(false);
-        i.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_jMenuItem10ActionPerformed
 
     private void jMenuItem9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem9ActionPerformed

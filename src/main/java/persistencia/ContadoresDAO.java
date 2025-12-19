@@ -16,8 +16,13 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 public class ContadoresDAO {
+    //Conexion con la Base de datos
     public Connection conexion = ConectorBD.getConexion();
     
+    /**
+     * Funcion que obtiene todos los contadores del despacho
+     * @return Variable de tipo Map con los contadores y sus Ids para busqueda
+     */
     public Map<Integer,Contadores> getContadores(){
         String sql = "SELECT * FROM contadores WHERE id_estado = 1";
         Map<Integer,Contadores> contadores = new HashMap<>();
@@ -50,7 +55,13 @@ public class ContadoresDAO {
         
     }
     
-    
+    /***
+     * Funcion que inserta un registro en la tabla Contadores
+     * @param conta Instancia de tipo Contadores que contiene los datos a insertar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     *  @see Contadores
+     */
     public String insertContador(Contadores conta){
         String sql = "INSERT INTO contadores(nombre_contador,contacto_contador,id_estado) VALUES (?,?,?)";
         
@@ -68,6 +79,12 @@ public class ContadoresDAO {
         }
     }
     
+    /**
+     * Funcion que "Elimina" un registro en la tabla contadores
+     * @param id_contador Variable de tipo int que contiene el id del contador a eliminar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String deleteContador(int id_contador){
         String sql = "UPDATE contadores SET id_estado = 2 WHERE id_contador = ?";
         
@@ -81,12 +98,19 @@ public class ContadoresDAO {
         }
     }
     
-    public String updateContactoContador(String contacto, int id_cliente){
-        String sql = "UPDATE clientes SET contacto_cliente = ? WHERE id_cliente = ?";
+    /**
+     * Funcion que permite modificar un registro, solo su contacto, de la tabla contadores
+     * @param contacto Variable de tipo String con el datos de contacto del contador
+     * @param id_contador Variable de tipo int con el id del contador a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
+    public String updateContactoContador(String contacto, int id_contador){
+        String sql = "UPDATE contadores SET contacto_contador = ? WHERE id_contador = ?";
         
         try(PreparedStatement ucc = conexion.prepareStatement(sql)){
             ucc.setString(1, contacto);
-            ucc.setInt(2, id_cliente);
+            ucc.setInt(2, id_contador);
             
             ucc.executeUpdate();
             return "correcto";

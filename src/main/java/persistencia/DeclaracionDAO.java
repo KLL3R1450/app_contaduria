@@ -11,8 +11,17 @@ import javax.swing.JOptionPane;
 
 
 public class DeclaracionDAO {
+    //Conexion con la Base de datos
     private final Connection conexion = ConectorBD.getConexion();
     
+    /**
+     * Funcion que inserta un registro de tipo Declaracion de la declaracion de los clientes
+     * @param id_cliente Variable de tipo int que contiene el id del cliente a insertar su declaracion
+     * @param anio Variable de tipo int que contiene el año de la declaracion
+     * @param mes Variable de tipo int que contiene el mes de la declaracion
+     * @return"El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String insertDeclaracion(int id_cliente,int anio, int mes){
         String sql = "INSERT INTO declaraciones_clientes(id_cliente,anio,mes) VALUES (?,?,?)";
         
@@ -30,6 +39,12 @@ public class DeclaracionDAO {
         
     }
     
+    /***
+     * Funcion que permite colocar si ya se comprobaron los gastos de un cliente
+     * @param id_declaracion Variable de tipo Int que contiene el id de la declaracion a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String colocarGastos(int id_declaracion){
         String sql = "UPDATE declaraciones_clientes SET gastos = 1 WHERE id_declaracion = ?";
         
@@ -45,6 +60,12 @@ public class DeclaracionDAO {
         
     }
     
+    /***
+     * Funcion que permite colocar si ya se corroboraron los datos de ingresos de un cliente para un mes y año puntual
+     * @param id_declaracion Variable de tipo Int con el id de la declaracion a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String colocarIngresos(int id_declaracion){
         String sql = "UPDATE declaraciones_clientes SET ingresos = 1 WHERE id_declaracion = ?";
         
@@ -59,6 +80,12 @@ public class DeclaracionDAO {
         }
     }
     
+    /**
+     * Funcion que Hace lo mismo que @colocarGastos y @colocarIngresos pero en una misma funcion 
+     * @param id_declaracion Variable de tipo int que contiene el id de la declaracion a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String colocarIngresosGastos(int id_declaracion){
         String sql = "UPDATE declaraciones_clientes SET ingresos = 1, gastos = 1 WHERE id_declaracion = ?";
         
@@ -73,6 +100,12 @@ public class DeclaracionDAO {
         }
     }
     
+    /**
+     * Funcion que setea el estado de declarado para una declaracion
+     * @param id_declaracion Variable de tipo int que contiene el id de la declaracion a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String setDeclarado(int id_declaracion){
         String sql = "UPDATE declaraciones_clientes SET declarado = 1 WHERE id_declaracion = ?";
         
@@ -87,6 +120,12 @@ public class DeclaracionDAO {
         }
     }
     
+    /**
+     * Funcion que remueve el estado de declarado "SOLO USAR EN CASOS PUNTUALES"
+     * @param id_declaracion Variable de tipo int que contiene el id de la declaracion a modificar
+     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
+     * "correcto"
+     */
     public String desDeclarar(int id_declaracion){
         String sql = "UPDATE declaraciones_clientes SET declarado = 0 WHERE id_declaracion = ?";
         
@@ -101,6 +140,11 @@ public class DeclaracionDAO {
         }
     }
     
+    /**
+     * Obtiene todas las declaraciones que tiene la tabla declaraciones_clientes
+     * @return Variable de tipo Map con los ids como clave y declaraciones 
+     * @deprecated
+     */
     public Map<Integer,Declaracion> getAllDeclaraciones(){
         String sql = "SELECT * FROM declaraciones_clientes";
         Map<Integer, Declaracion> decs = new HashMap<>();
