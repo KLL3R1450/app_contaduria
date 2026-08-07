@@ -38,7 +38,7 @@ public class EFirmasDAO {
             }
              
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"error al obtener EFirmas: " + ex.getMessage());
+            throw new RuntimeException("Error al obtener EFirmas: " + ex.getMessage(), ex);
         }
         
         return firmas;

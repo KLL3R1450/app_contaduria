@@ -49,8 +49,7 @@ public class ContadoresDAO {
             return contadores;
             
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Error al obtener los contadores: " + ex.getMessage());
-            return contadores;
+            throw new RuntimeException("Error al obtener los contadores: " + ex.getMessage(), ex);
         }
         
     }
@@ -65,12 +64,18 @@ public class ContadoresDAO {
     public String insertContador(Contadores conta){
         String sql = "INSERT INTO contadores(nombre_contador,contacto_contador,id_estado) VALUES (?,?,?)";
         
-        try(PreparedStatement ic = conexion.prepareStatement(sql)){
+        try(PreparedStatement ic = conexion.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)){
            ic.setString(1, conta.nombre);
            ic.setString(2, conta.contacto);
            ic.setInt(3, 1);
            
            ic.executeUpdate();
+           
+           try (ResultSet rs = ic.getGeneratedKeys()) {
+               if (rs.next()) {
+                   conta.setId(rs.getInt(1));
+               }
+           }
            
            return "correcto";
            

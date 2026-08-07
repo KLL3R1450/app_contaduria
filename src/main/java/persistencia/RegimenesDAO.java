@@ -37,7 +37,7 @@ public class RegimenesDAO {
             }
             
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Error al obtener regimenes: " + ex.getMessage());
+            throw new RuntimeException("Error al obtener regimenes: " + ex.getMessage(), ex);
         }
         
         return regimenes;

@@ -37,14 +37,18 @@ public class Controlador implements IControler{
     
     @Override
     public void cargarTodo() {
-        contadores = dBContadores.getContadores();
-        clientes = dBClientes.getClientes();
-        regimenes = dBRegimenes.getRegimenes();
-        eFirmas = dBFirmas.getAllFirmas();
-        declaraciones = dBDeclaraciones.getAllDeclaraciones();
-        terceros =  dBTerceros.getTerceros();
-        
-        JOptionPane.showMessageDialog(null, "Datos Extraidos con exito puedes empezar el dia");
+        try {
+            contadores = dBContadores.getContadores();
+            clientes = dBClientes.getClientes();
+            regimenes = dBRegimenes.getRegimenes();
+            eFirmas = dBFirmas.getAllFirmas();
+            declaraciones = dBDeclaraciones.getAllDeclaraciones();
+            terceros =  dBTerceros.getTerceros();
+            
+            JOptionPane.showMessageDialog(null, "Datos Extraidos con exito puedes empezar el dia");
+        } catch (RuntimeException ex) {
+            JOptionPane.showMessageDialog(null, "Fallo critico al cargar los datos de la base de datos:\n" + ex.getMessage(), "Error de Inicializacion", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private Controlador() {
@@ -89,7 +93,9 @@ public class Controlador implements IControler{
         
         String respuesta = dBContadores.insertContador(contador);
         
-        if("correcto".equals(respuesta)) dBContadores.getContadores();
+        if("correcto".equals(respuesta)){
+            contadores.put(contador.getId(), contador);
+        }
         
         return respuesta;
     }
@@ -119,7 +125,9 @@ public class Controlador implements IControler{
     public String insertCliente( Cliente cliente){
         String respuesta =  dBClientes.insertCliente(cliente);
         
-        if("correcto".equals(respuesta)) clientes = dBClientes.getClientes();
+        if("correcto".equals(respuesta)){
+            clientes.put(cliente.id_persona, cliente);
+        }
         
         return respuesta;
     }
@@ -161,7 +169,9 @@ public class Controlador implements IControler{
     public String insertTercero(Terceros t, ArrayList<Integer> clientesT){
         String respuesta = dBTerceros.insertTercero(t, clientesT);
         
-        if("correcto".equals(respuesta)) terceros = dBTerceros.getTerceros();
+        if("correcto".equals(respuesta)){
+            terceros.put(t.id_persona, t);
+        }
         
         return respuesta;
     }
@@ -228,7 +238,7 @@ public class Controlador implements IControler{
     }
     
     public String deleteRegimen(Regimenes r){
-        String respuesta = dBRegimenes.addRegimen(r);
+        String respuesta = dBRegimenes.deleteRegimen(r.getId());
         
         if("correcto".equals(respuesta)){
             

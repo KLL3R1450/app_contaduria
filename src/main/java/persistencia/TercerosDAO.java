@@ -40,7 +40,10 @@ public class TercerosDAO {
             
             if(insertado > 0){
                 ResultSet rs = it.getGeneratedKeys();
-                if(rs.next()) id = rs.getInt(1);
+                if(rs.next()) {
+                    id = rs.getInt(1);
+                    t.id_persona = id;
+                }
                 rs.close();
             }
             
@@ -93,6 +96,8 @@ public class TercerosDAO {
         String sql = "SELECT id_tercero FROM terceros_clientes WHERE id_cliente = ? AND id_tercero = ?";
         
         try(PreparedStatement ct = conexion.prepareStatement(sql)){
+            ct.setInt(1, idCliente);
+            ct.setInt(2, idTercero);
             ResultSet rs =  ct.executeQuery();
             
             if(rs.next()) {
@@ -143,7 +148,7 @@ public class TercerosDAO {
      * @return True o False dependiendo de resultado
      */
     private boolean terceroRegimen(int idTercero, int idRegimen){
-        String sql = "SELECT id_regimen FROM regiemenes_terceros WHERE id_tercero = ?";
+        String sql = "SELECT id_regimen FROM regimenes_terceros WHERE id_tercero = ?";
         
         try(PreparedStatement tr = conexion.prepareStatement(sql)){
             tr.setInt(1, idTercero);
@@ -241,7 +246,7 @@ public class TercerosDAO {
             rs.close();
             
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null, "Erro al obtener terceros: " +ex.getMessage());
+            throw new RuntimeException("Error al obtener terceros: " + ex.getMessage(), ex);
         }
         
         try{
@@ -264,8 +269,7 @@ public class TercerosDAO {
             reCl.close();
             
         }catch(SQLException ex){
-           JOptionPane.showMessageDialog(null,
-                   "Error al obtener regimenes de los terceros" + ex.getMessage());
+            throw new RuntimeException("Error al obtener regimenes de los terceros: " + ex.getMessage(), ex);
         }
         
         return listaTerceros;
@@ -279,7 +283,7 @@ public class TercerosDAO {
      * "correcto"
      */
     public String eliminarRegimenTercero(int idTercero, int idRegimen){
-        String sql = "DELETE FROM regimenes_clientes WHERE id_tercero = ? AND  id_regimen = ?";
+        String sql = "DELETE FROM regimenes_terceros WHERE id_tercero = ? AND id_regimen = ?";
         
         try(PreparedStatement deleteR = conexion.prepareStatement(sql)){
             deleteR.setInt(1, idTercero);
@@ -303,7 +307,7 @@ public class TercerosDAO {
      * "correcto"
      */
     public String insertarRegimenTerero(int idTercero, int idRegimen){
-        String sql = "INSERT INTO regimenes_tercero VALUES (?,?)";
+        String sql = "INSERT INTO regimenes_terceros VALUES (?,?)";
         
         if(terceroRegimen(idTercero, idRegimen)) return "El tercero ya tiene ese regimen";
         

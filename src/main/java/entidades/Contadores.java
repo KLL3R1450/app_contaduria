@@ -30,4 +30,8 @@ public class Contadores {
     public int getId(){
         return this.id_contador;
     }
+    
+    public void setId(int id){
+        this.id_contador = id;
+    }
 }

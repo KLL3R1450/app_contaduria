@@ -32,7 +32,7 @@ public class DeclaracionDAO {
             
             iD.executeUpdate();
             
-            return "Declaracion iniciada con exito";
+            return "correcto";
         }catch(SQLException ex){
             return "Error al crear declaracion: " +ex.getMessage();
         }
@@ -164,10 +164,9 @@ public class DeclaracionDAO {
             
             return decs;
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Error al obtener las declaraciones: " + ex.getMessage());
+            throw new RuntimeException("Error al obtener las declaraciones: " + ex.getMessage(), ex);
         }
         
-        return decs;
     }
     
 }

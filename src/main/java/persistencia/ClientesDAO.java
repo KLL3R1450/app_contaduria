@@ -47,7 +47,10 @@ public class ClientesDAO {
                 
                 ResultSet rs = insertC.getGeneratedKeys();
                 
-                if(rs.next()) id = rs.getInt(1);
+                if(rs.next()) {
+                    id = rs.getInt(1);
+                    cliente.id_persona = id;
+                }
                 rs.close();
                 System.out.println("id");
             }
@@ -142,7 +145,7 @@ public class ClientesDAO {
             clientes.close();
 
         }catch(SQLException e){
-            JOptionPane.showMessageDialog(null, "Fallo al obtener clientes:" + e.getMessage());
+            throw new RuntimeException("Fallo al obtener clientes de la base de datos: " + e.getMessage(), e);
         }
 
         sql = "SELECT id_cliente,id_regimen FROM regimenes_clientes";
@@ -162,7 +165,7 @@ public class ClientesDAO {
             getRC.close();
             rg.close();
         }catch(SQLException ex){
-            JOptionPane.showMessageDialog(null,"Fallo al obtener regimenes: " + ex.getMessage());
+            throw new RuntimeException("Fallo al obtener regimenes de clientes: " + ex.getMessage(), ex);
         }
 
         return cls;
