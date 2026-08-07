@@ -12,6 +12,7 @@ El proyecto está desarrollado utilizando las siguientes tecnologías principale
 * **Gestor de Proyectos y Dependencias**: Maven (especificado en `pom.xml`)
 * **Base de Datos**: SQLite
 * **Driver JDBC**: `sqlite-jdbc` de `org.xerial` (Versión `3.50.1.0`)
+* **Librería de Temas**: FlatLaf & FlatLaf-Extras (`3.5.2`)
 * **Interfaz de Usuario (UI)**: Java Swing (AWT/Swing para entorno de escritorio)
 
 ---

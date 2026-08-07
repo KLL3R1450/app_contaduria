@@ -11,8 +11,8 @@ import entidades.Terceros;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.JOptionPane;
-import javax.swing.RowFilter;
+import javax.swing.*;
+import java.awt.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
@@ -52,6 +52,45 @@ public class BuscarPersonas extends javax.swing.JDialog {
         cargarPersonas();
         ocultarColumnaId();
         
+        // Restructure layout to BorderLayout for a cleaner look
+        JPanel contentPane = new JPanel(new BorderLayout(15, 15));
+        contentPane.setBorder(new javax.swing.border.EmptyBorder(15, 15, 15, 15));
+        setContentPane(contentPane);
+
+        // Search Panel (North)
+        JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
+        searchPanel.add(jLabel1, BorderLayout.NORTH);
+        searchPanel.add(campo, BorderLayout.CENTER);
+        contentPane.add(searchPanel, BorderLayout.NORTH);
+
+        // Table Panel (Center)
+        contentPane.add(jScrollPane1, BorderLayout.CENTER);
+
+        // Action Buttons Panel (South)
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        
+        JButton btnAgregar = new JButton("➕ Agregar");
+        btnAgregar.putClientProperty("JButton.buttonType", "roundRect");
+        btnAgregar.addActionListener(e -> accionAgregar());
+        
+        JButton btnDetalles = new JButton("🔍 Ver Detalles");
+        btnDetalles.putClientProperty("JButton.buttonType", "roundRect");
+        btnDetalles.addActionListener(e -> accionDetalles());
+        
+        JButton btnEliminar = new JButton("❌ Eliminar");
+        btnEliminar.putClientProperty("JButton.buttonType", "roundRect");
+        btnEliminar.addActionListener(e -> accionEliminar());
+        
+        if ("clientes".equals(tipoPersona) || "terceros".equals(tipoPersona)) {
+            actionPanel.add(btnAgregar);
+            actionPanel.add(btnEliminar);
+        }
+        actionPanel.add(btnDetalles);
+        
+        contentPane.add(actionPanel, BorderLayout.SOUTH);
+        
+        pack();
+        setLocationRelativeTo(parent);
     }
     
     private void ocultarColumnaId(){
@@ -116,7 +155,7 @@ public class BuscarPersonas extends javax.swing.JDialog {
         if ("clientes".equals(tipoPersona)){
             
             DetallesClientes dc = 
-                new DetallesClientes(null, rootPaneCheckingEnabled,
+                new DetallesClientes((java.awt.Frame) this.getParent(), rootPaneCheckingEnabled,
                         c, c.getClienteById(id));
     
             dc.setVisible(true);
@@ -124,14 +163,14 @@ public class BuscarPersonas extends javax.swing.JDialog {
         
         else if("terceros".equals(tipoPersona)){
             DetallesTerceros dt = 
-                    new DetallesTerceros(null, rootPaneCheckingEnabled, 
+                    new DetallesTerceros((java.awt.Frame) this.getParent(), rootPaneCheckingEnabled, 
                             c, c.getTerceroById(id));
             
             dt.setVisible(true);
         }
         else if("tercerosDe".equals(tipoPersona)){
             DetallesTerceros dt = 
-                    new DetallesTerceros(null, rootPaneCheckingEnabled, 
+                    new DetallesTerceros((java.awt.Frame) this.getParent(), rootPaneCheckingEnabled, 
                             c, c.getTerceroById(id));
             
             dt.setVisible(true);
@@ -415,6 +454,58 @@ public class BuscarPersonas extends javax.swing.JDialog {
         }
     }
     
+
+    private void accionAgregar() {
+        if ("clientes".equals(tipoPersona)) {
+            new AñadirCliente((java.awt.Frame) this.getParent(), true, c).setVisible(true);
+        } else if ("terceros".equals(tipoPersona)) {
+            new añadirTercero((java.awt.Frame) this.getParent(), true, c).setVisible(true);
+        }
+        cargarPersonas();
+    }
+
+    private void accionDetalles() {
+        int fila = tabla.getSelectedRow();
+        if (fila != -1) {
+            int filaModelo = tabla.convertRowIndexToModel(fila);
+            Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
+            detallesPersonas(id);
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione un registro para ver detalles.");
+        }
+    }
+
+    private void accionEliminar() {
+        int fila = tabla.getSelectedRow();
+        if (fila != -1) {
+            int filaModelo = tabla.convertRowIndexToModel(fila);
+            Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
+            String nombre = (String) tabla.getModel().getValueAt(filaModelo, 1);
+            
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "¿Está seguro de que desea eliminar a: " + nombre + "?", 
+                "Confirmar Eliminación", 
+                JOptionPane.YES_NO_OPTION);
+                
+            if (confirm == JOptionPane.YES_OPTION) {
+                String res;
+                if ("clientes".equals(tipoPersona)) {
+                    res = c.deleteCliente(id);
+                } else {
+                    res = c.borrarTercero(id);
+                }
+                
+                if ("correcto".equals(res)) {
+                    JOptionPane.showMessageDialog(this, "Registro eliminado con éxito.");
+                    cargarPersonas();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Error al eliminar: " + res);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione un registro para eliminar.");
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField campo;
