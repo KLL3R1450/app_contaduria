@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public abstract class ConectorBD {
     private final static String DB_PATH = "jdbc:sqlite:data/DespachoDB.db";
       
-    protected static Connection getConexion(){
+    public static Connection getConexion(){
        
        try{
            Connection conexion = DriverManager.getConnection(DB_PATH);

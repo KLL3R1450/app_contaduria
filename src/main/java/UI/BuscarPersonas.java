@@ -83,10 +83,18 @@ public class BuscarPersonas extends javax.swing.JDialog {
         btnEliminar.putClientProperty("JButton.buttonType", "roundRect");
         btnEliminar.addActionListener(e -> accionEliminar());
         
-        if ("clientes".equals(tipoPersona) || "terceros".equals(tipoPersona)) {
+        if ("clientes".equals(tipoPersona) || "terceros".equals(tipoPersona) || "firmas".equals(tipoPersona)) {
             actionPanel.add(btnAgregar);
-            actionPanel.add(btnEliminar);
+            if (!"firmas".equals(tipoPersona)) {
+                actionPanel.add(btnEliminar);
+            }
         }
+        
+        JButton btnCopiarSAT = new JButton("📋 Copiar SAT");
+        btnCopiarSAT.putClientProperty("JButton.buttonType", "roundRect");
+        btnCopiarSAT.addActionListener(e -> accionCopiarSAT());
+        actionPanel.add(btnCopiarSAT);
+
         actionPanel.add(btnDetalles);
         
         contentPane.add(actionPanel, BorderLayout.SOUTH);
@@ -180,14 +188,17 @@ public class BuscarPersonas extends javax.swing.JDialog {
         else if("firmas".equals(tipoPersona)){
             EFirmas efirma = c.getFirmaDe(id);
             
-            if(efirma == null)
-                JOptionPane.showMessageDialog(rootPane, "El cliente no cuenta con EFirma registrada en el sistema");
-            
-            else{
-                /*DetallesFirma df = new DetallesFirma(null,rootPaneCheckingEnabled, c, c.getClienteById(id));
-                df.setVisible(true);*/
+            if(efirma == null) {
+                int res = JOptionPane.showConfirmDialog(rootPane, 
+                    "El cliente no cuenta con EFirma registrada en el sistema. ¿Quieres agregarla de una vez?", 
+                    "Agregar E-Firma", 
+                    JOptionPane.YES_NO_OPTION);
+                if (res == JOptionPane.YES_OPTION) {
+                    new EditarFirmaDialog((java.awt.Window) this.getParent(), c, c.getClienteById(id)).setVisible(true);
+                }
+            } else {
+                new EditarFirmaDialog((java.awt.Window) this.getParent(), c, c.getClienteById(id)).setVisible(true);
             }
-            
         }
         
         cargarPersonas();
@@ -462,6 +473,19 @@ public class BuscarPersonas extends javax.swing.JDialog {
             new AñadirCliente((java.awt.Frame) this.getParent(), true, c).setVisible(true);
         } else if ("terceros".equals(tipoPersona)) {
             new añadirTercero((java.awt.Frame) this.getParent(), true, c).setVisible(true);
+        } else if ("firmas".equals(tipoPersona)) {
+            int selectedRow = tabla.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Seleccione un cliente de la lista para añadirle una E-Firma.");
+                return;
+            }
+            int modelRow = tabla.convertRowIndexToModel(selectedRow);
+            int id = (Integer) tabla.getModel().getValueAt(modelRow, 0);
+            if (c.getFirmaDe(id) != null) {
+                JOptionPane.showMessageDialog(this, "El cliente seleccionado ya tiene una E-Firma registrada. Utilice Ver Detalles/Doble Click para editarla.");
+            } else {
+                new EditarFirmaDialog((java.awt.Window) this.getParent(), c, c.getClienteById(id)).setVisible(true);
+            }
         }
         cargarPersonas();
     }
@@ -506,6 +530,67 @@ public class BuscarPersonas extends javax.swing.JDialog {
             }
         } else {
             JOptionPane.showMessageDialog(this, "Por favor, seleccione un registro para eliminar.");
+        }
+    }
+
+    private void accionCopiarSAT() {
+        int fila = tabla.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione una persona de la lista.");
+            return;
+        }
+        int filaModelo = tabla.convertRowIndexToModel(fila);
+        Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
+
+        String rfc = "";
+        String cp = "";
+        java.util.ArrayList<Integer> regIds = null;
+        String nombre = "";
+
+        if ("clientes".equals(tipoPersona) || "firmas".equals(tipoPersona)) {
+            Cliente cli = c.getClienteById(id);
+            if (cli != null) {
+                rfc = cli.rfc;
+                cp = cli.cp;
+                regIds = cli.idsRegimenes;
+                nombre = cli.nombre;
+            }
+        } else if ("terceros".equals(tipoPersona) || "tercerosDe".equals(tipoPersona)) {
+            Terceros ter = c.getTerceroById(id);
+            if (ter != null) {
+                rfc = ter.rfc;
+                cp = ter.cp;
+                regIds = ter.idsRegimenes;
+                nombre = ter.nombre;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nombre/Razón Social: ").append(nombre).append("\n");
+        sb.append("RFC: ").append(rfc).append("\n");
+        sb.append("CP: ").append(cp).append("\n");
+        sb.append("Régimen(es): ");
+        if (regIds != null && !regIds.isEmpty()) {
+            java.util.ArrayList<String> regNames = new java.util.ArrayList<>();
+            for (Integer rId : regIds) {
+                for (entidades.Regimenes r : c.getRegimenes()) {
+                    if (r.getId() == rId) {
+                        regNames.add(r.regimen);
+                    }
+                }
+            }
+            sb.append(String.join(", ", regNames));
+        } else {
+            sb.append("Sin registrar");
+        }
+
+        try {
+            java.awt.datatransfer.StringSelection selection = new java.awt.datatransfer.StringSelection(sb.toString());
+            java.awt.datatransfer.Clipboard clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(selection, selection);
+            JOptionPane.showMessageDialog(this, "¡Copiado al portapapeles con éxito!\n\n" + sb.toString());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al copiar al portapapeles: " + ex.getMessage());
         }
     }
 
