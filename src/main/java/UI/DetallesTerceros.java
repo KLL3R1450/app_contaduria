@@ -32,7 +32,20 @@ public class DetallesTerceros extends javax.swing.JDialog {
         listaRegimenes.setModel(modelo);
         
         cargarDatos();
-    }
+
+        // FlatLaf styling
+        FNombre.putClientProperty("JTextField.roundRect", true);
+        FCP.putClientProperty("JTextField.roundRect", true);
+        FRFC.putClientProperty("JTextField.roundRect", true);
+        FCorreo.putClientProperty("JTextField.roundRect", true);
+
+        cambiar.putClientProperty("JButton.buttonType", "roundRect");
+        regimenes.putClientProperty("JButton.buttonType", "roundRect");
+
+        setResizable(false);
+        setJMenuBar(null);
+        setLocationRelativeTo(parent);
+     }
 
     private void cargarDatos(){
         FNombre.setText(tercero.nombre);
@@ -384,9 +397,11 @@ public class DetallesTerceros extends javax.swing.JDialog {
     }//GEN-LAST:event_cambiarActionPerformed
 
     private void regimenesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regimenesActionPerformed
-        CambiarRegimenes cr = new CambiarRegimenes(null, rootPaneCheckingEnabled, c, tercero, "terceros");
-        this.dispose();
+        CambiarRegimenes cr = new CambiarRegimenes((java.awt.Frame) this.getOwner(), rootPaneCheckingEnabled, c, tercero, "terceros");
         cr.setVisible(true);
+        
+        // Refresh details and regimes list
+        cargarDatos();
     }//GEN-LAST:event_regimenesActionPerformed
 
     private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed

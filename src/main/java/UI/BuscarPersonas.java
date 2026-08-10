@@ -36,6 +36,8 @@ public class BuscarPersonas extends javax.swing.JDialog {
     public BuscarPersonas(java.awt.Frame parent, boolean modal, Controlador controler, String tp) {
         super(parent, modal);
         initComponents();
+        setResizable(false);
+        setJMenuBar(null);
         l = new Eventos();
         
         c = controler;

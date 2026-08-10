@@ -22,6 +22,7 @@ public class EFirmasDAO {
      * @return Un Map con las Efirmas 
      * @deprecated 
      */
+    @Deprecated
     public Map<Integer,EFirmas> getAllFirmas(){
         String sql = "SELECT fecha_expiracion,fecha_renovacion,id_cliente FROM e_firmas";
         Map<Integer,EFirmas> firmas = new HashMap<>();

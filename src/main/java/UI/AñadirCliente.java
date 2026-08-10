@@ -48,6 +48,25 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         setRegimenes();
         setContadores();
+
+        // FlatLaf styling
+        TNom.putClientProperty("JTextField.roundRect", true);
+        TNom.putClientProperty("JTextField.placeholderText", "Nombre completo...");
+        TRfc.putClientProperty("JTextField.roundRect", true);
+        TRfc.putClientProperty("JTextField.placeholderText", "RFC de 12 o 13 dígitos...");
+        TCp.putClientProperty("JTextField.roundRect", true);
+        TCp.putClientProperty("JTextField.placeholderText", "Código Postal...");
+        TCorr.putClientProperty("JTextField.roundRect", true);
+        TCorr.putClientProperty("JTextField.placeholderText", "Correo electrónico...");
+        THon.putClientProperty("JTextField.roundRect", true);
+        THon.putClientProperty("JTextField.placeholderText", "Monto de honorarios...");
+
+        CCon.putClientProperty("JComboBox.isButtonRoundRect", true);
+        jButton1.putClientProperty("JButton.buttonType", "roundRect");
+
+        setResizable(false);
+        setJMenuBar(null);
+        setLocationRelativeTo(parent);
     }
     
     private void setRegimenes(){

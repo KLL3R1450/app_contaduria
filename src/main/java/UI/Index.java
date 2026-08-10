@@ -38,6 +38,7 @@ public class Index extends javax.swing.JFrame {
         setTitle("Despacho Contable - Dashboard");
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new Dimension(950, 600));
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -73,24 +74,34 @@ public class Index extends javax.swing.JFrame {
         sidebar.add(Box.createRigidArea(new Dimension(0, 40)));
 
         // Botones de Acceso Rápido en la Barra Lateral
-        JButton btnDashboard = crearBotonSidebar("📊 Dashboard");
+        JButton btnDashboard = crearBotonSidebar(" Dashboard");
         btnDashboard.addActionListener(e -> cargarDatosDashboard());
         sidebar.add(btnDashboard);
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        JButton btnClientes = crearBotonSidebar("👥 Clientes");
+        JButton btnClientes = crearBotonSidebar(" Clientes");
         btnClientes.addActionListener(e -> abrirBuscarClientes());
         sidebar.add(btnClientes);
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        JButton btnTerceros = crearBotonSidebar("🤝 Terceros");
+        JButton btnTerceros = crearBotonSidebar(" Terceros");
         btnTerceros.addActionListener(e -> abrirBuscarTerceros());
         sidebar.add(btnTerceros);
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        JButton btnFirmas = crearBotonSidebar("🔑 E-Firmas");
+        JButton btnFirmas = crearBotonSidebar(" E-Firmas");
         btnFirmas.addActionListener(e -> abrirBuscarFirmas());
         sidebar.add(btnFirmas);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        JButton btnListasContadores = crearBotonSidebar(" Listas Contadores");
+        btnListasContadores.addActionListener(e -> abrirListasContadores());
+        sidebar.add(btnListasContadores);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        JButton btnDeclaraciones = crearBotonSidebar(" Declaraciones");
+        btnDeclaraciones.addActionListener(e -> abrirDeclaracionesContadores());
+        sidebar.add(btnDeclaraciones);
 
         // Separador flexible hacia el fondo
         sidebar.add(Box.createVerticalGlue());
@@ -146,7 +157,7 @@ public class Index extends javax.swing.JFrame {
         JPanel tableSection = new JPanel(new BorderLayout());
         tableSection.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1, true),
-                " 🔑 E-Firmas Registradas / Expiraciones ",
+                " E-Firmas Registradas / Expiraciones ",
                 0, 0,
                 new Font("Segoe UI", Font.BOLD, 14),
                 UIManager.getColor("Label.foreground")
@@ -238,12 +249,12 @@ public class Index extends javax.swing.JFrame {
     private void alternarTema() {
         FlatAnimatedLafChange.showSnapshot();
         try {
-            if (isDarkMode) {
+            if (!isDarkMode) {
                 UIManager.setLookAndFeel(new FlatLightLaf());
-                isDarkMode = false;
+                isDarkMode = true;
             } else {
                 UIManager.setLookAndFeel(new FlatDarkLaf());
-                isDarkMode = true;
+                isDarkMode = false;
             }
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception ex) {
@@ -285,6 +296,18 @@ public class Index extends javax.swing.JFrame {
     private void abrirEliminarPersonas() {
         EliminarPersonas ec = new EliminarPersonas(this, rootPaneCheckingEnabled, c, "clientes");
         ec.setVisible(true);
+        cargarDatosDashboard(); // refrescar
+    }
+
+    private void abrirListasContadores() {
+        VerListasContadores vlc = new VerListasContadores(this, rootPaneCheckingEnabled, c);
+        vlc.setVisible(true);
+        cargarDatosDashboard(); // refrescar
+    }
+
+    private void abrirDeclaracionesContadores() {
+        DeclaracionesContadores dc = new DeclaracionesContadores(this, rootPaneCheckingEnabled, c);
+        dc.setVisible(true);
         cargarDatosDashboard(); // refrescar
     }
 

@@ -46,6 +46,13 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         ListaD.addMouseListener(l);
                 
         setRegimenes();
+
+        // FlatLaf styling
+        jButton3.putClientProperty("JButton.buttonType", "roundRect");
+
+        setResizable(false);
+        setJMenuBar(null);
+        setLocationRelativeTo(parent);
     }
 
     private void setRegimenes(){

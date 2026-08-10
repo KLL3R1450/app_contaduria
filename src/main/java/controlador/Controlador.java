@@ -338,7 +338,6 @@ public class Controlador implements IControler{
         return respuesta;
     }
     
-    //Metodos Nuevos
     
     public Cliente getClienteById(int id){
         return clientes.get(id);
@@ -367,4 +366,50 @@ public class Controlador implements IControler{
         
         return respuesta;
     }
+
+    public Declaracion obtenerOCrearDeclaracion(int idCliente, int anio, int mes) {
+        for (Declaracion d : declaraciones.values()) {
+            if (d.getIdCliente() == idCliente && d.anio == anio && d.mes == mes) {
+                return d;
+            }
+        }
+        String res = insertarDeclaracion(idCliente, anio, mes);
+        if ("correcto".equals(res)) {
+            for (Declaracion d : declaraciones.values()) {
+                if (d.getIdCliente() == idCliente && d.anio == anio && d.mes == mes) {
+                    return d;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String toggleGastos(int idDeclaracion, boolean check) {
+        String sql = check ? dBDeclaraciones.colocarGastos(idDeclaracion) : dBDeclaraciones.revertirGastos(idDeclaracion);
+        if ("correcto".equals(sql)) {
+            declaraciones.get(idDeclaracion).gastos = check ? 1 : 0;
+            return "correcto";
+        }
+        return sql;
+    }
+
+    public String toggleIngresos(int idDeclaracion, boolean check) {
+        String sql = check ? dBDeclaraciones.colocarIngresos(idDeclaracion) : dBDeclaraciones.revertirIngresos(idDeclaracion);
+        if ("correcto".equals(sql)) {
+            declaraciones.get(idDeclaracion).ingresos = check ? 1 : 0;
+            return "correcto";
+        }
+        return sql;
+    }
+
+    public String toggleDeclarado(int idDeclaracion, boolean check) {
+        String sql = check ? setDeclarado(idDeclaracion) : desDeclarar(idDeclaracion);
+        if ("correcto".equals(sql)) {
+            declaraciones.get(idDeclaracion).declarado = check ? 1 : 0;
+            return "correcto";
+        }
+        return sql;
+    }
+
+
 }

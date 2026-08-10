@@ -39,7 +39,25 @@ public class DetallesClientes extends javax.swing.JDialog {
         setContadores();
         setValues();
         
+        // FlatLaf styling
+        FNombre.putClientProperty("JTextField.roundRect", true);
+        FCP.putClientProperty("JTextField.roundRect", true);
+        FRFC.putClientProperty("JTextField.roundRect", true);
+        FCorreo.putClientProperty("JTextField.roundRect", true);
+        FHonorarios.putClientProperty("JTextField.roundRect", true);
+
+        ComboContadores.putClientProperty("JComboBox.isButtonRoundRect", true);
+
+        VerTerceros.putClientProperty("JButton.buttonType", "roundRect");
+        cambiar.putClientProperty("JButton.buttonType", "roundRect");
+        cambiar1.putClientProperty("JButton.buttonType", "roundRect");
+        regimenes.putClientProperty("JButton.buttonType", "roundRect");
+
         hayCambios = false;
+
+        setResizable(false);
+        setJMenuBar(null);
+        setLocationRelativeTo(parent);
     }
     
     private void setContadores(){
@@ -581,15 +599,22 @@ public class DetallesClientes extends javax.swing.JDialog {
     }//GEN-LAST:event_cambiar1ActionPerformed
 
     private void regimenesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regimenesActionPerformed
-        CambiarRegimenes cr = new CambiarRegimenes(null, rootPaneCheckingEnabled, c, cliente,"clientes");
-        this.dispose();
+        CambiarRegimenes cr = new CambiarRegimenes((java.awt.Frame) this.getOwner(), rootPaneCheckingEnabled, c, cliente,"clientes");
         cr.setVisible(true);
+        
+        // Refresh regimes list in details view
+        listaR.clear();
+        ArrayList<Regimenes> regimens = c.getRegimenes();
+        for(Regimenes r : regimens){
+            if(cliente.idsRegimenes.contains(r.getId())){
+                listaR.addElement(r.regimen);
+            }
+        }
     }//GEN-LAST:event_regimenesActionPerformed
 
     private void VerTercerosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_VerTercerosActionPerformed
-        BuscarPersonas bp = new BuscarPersonas(null, rootPaneCheckingEnabled, c, "tercerosDe");
+        BuscarPersonas bp = new BuscarPersonas((java.awt.Frame) this.getOwner(), rootPaneCheckingEnabled, c, "tercerosDe");
         bp.setIdPersona(cliente.id_persona);
-        this.dispose();
         bp.setVisible(true);
     }//GEN-LAST:event_VerTercerosActionPerformed
 

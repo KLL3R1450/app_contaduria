@@ -145,6 +145,7 @@ public class DeclaracionDAO {
      * @return Variable de tipo Map con los ids como clave y declaraciones 
      * @deprecated
      */
+    @Deprecated
     public Map<Integer,Declaracion> getAllDeclaraciones(){
         String sql = "SELECT * FROM declaraciones_clientes";
         Map<Integer, Declaracion> decs = new HashMap<>();
@@ -167,6 +168,31 @@ public class DeclaracionDAO {
             throw new RuntimeException("Error al obtener las declaraciones: " + ex.getMessage(), ex);
         }
         
+    }
+    
+    public String revertirGastos(int idDeclaracion) {
+        String sql = "UPDATE declaraciones_clientes SET gastos = 0 WHERE id_declaracion = ?";
+        try (java.sql.PreparedStatement ps = conexion.prepareStatement(sql)) {
+            if (ps != null) {
+                ps.setInt(1, idDeclaracion);
+                ps.executeUpdate();
+                return "correcto";
+            }
+            return "Error de conexión";
+        } catch (java.sql.SQLException ex) {
+            return ex.getMessage();
+        }
+    }
+
+    public String revertirIngresos(int idDeclaracion) {
+        String sql = "UPDATE declaraciones_clientes SET ingresos = 0 WHERE id_declaracion = ?";
+        try (java.sql.PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idDeclaracion);
+            ps.executeUpdate();
+            return "correcto";
+        } catch (java.sql.SQLException ex) {
+            return ex.getMessage();
+        }
     }
     
 }

@@ -46,6 +46,13 @@ public class EliminarPersonas extends javax.swing.JDialog {
         
         listaA.addMouseListener(l);
         ListaD.addMouseListener(l);
+
+        // FlatLaf styling
+        jButton1.putClientProperty("JButton.buttonType", "roundRect");
+
+        setResizable(false);
+        setJMenuBar(null);
+        setLocationRelativeTo(parent);
     }
     
     private void setListaPersonas(){
