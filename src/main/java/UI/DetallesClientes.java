@@ -152,7 +152,7 @@ public class DetallesClientes extends javax.swing.JDialog {
         jMenu4 = new javax.swing.JMenu();
         jMenuItem12 = new javax.swing.JMenuItem();
 
-        cambiar1.setText("Cambiar");
+        cambiar1.setText("Editar E-Firma");
         cambiar1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cambiar1ActionPerformed(evt);
@@ -595,7 +595,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     }//GEN-LAST:event_formWindowClosing
 
     private void cambiar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiar1ActionPerformed
-        // TODO add your handling code here:
+        new EditarFirmaDialog((java.awt.Window) this.getOwner(), c, cliente).setVisible(true);
     }//GEN-LAST:event_cambiar1ActionPerformed
 
     private void regimenesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regimenesActionPerformed

@@ -12,6 +12,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Modern Dashboard Principal utilizing FlatLaf
@@ -165,7 +167,7 @@ public class Index extends javax.swing.JFrame {
 
         tableModel = new DefaultTableModel(
             new Object[][]{},
-            new String[]{"Cliente", "RFC", "Fecha Expiración", "Fecha Renovación"}
+            new String[]{"ID Cliente", "Cliente", "RFC", "Fecha Expiración", "Fecha Renovación", "Estado"}
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -178,6 +180,56 @@ public class Index extends javax.swing.JFrame {
         tblFirmas.setShowHorizontalLines(true);
         tblFirmas.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         tblFirmas.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        // Ocultar ID Cliente
+        tblFirmas.getColumnModel().getColumn(0).setMinWidth(0);
+        tblFirmas.getColumnModel().getColumn(0).setMaxWidth(0);
+        tblFirmas.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        // Renderizador de Semáforo
+        tblFirmas.getColumnModel().getColumn(5).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component cComp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (value != null) {
+                    String val = value.toString();
+                    if (val.contains("Vigente")) {
+                        cComp.setBackground(new Color(46, 204, 113, 80)); // Verde pastel
+                        cComp.setForeground(table.getForeground());
+                    } else if (val.contains("Próximo")) {
+                        cComp.setBackground(new Color(241, 196, 15, 80)); // Amarillo pastel
+                        cComp.setForeground(table.getForeground());
+                    } else if (val.contains("Vencido")) {
+                        cComp.setBackground(new Color(231, 76, 60, 80)); // Rojo pastel
+                        cComp.setForeground(table.getForeground());
+                    }
+                }
+                if (isSelected) {
+                    cComp.setBackground(table.getSelectionBackground());
+                    cComp.setForeground(table.getSelectionForeground());
+                }
+                return cComp;
+            }
+        });
+
+        // Doble click para editar firma directamente
+        tblFirmas.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = tblFirmas.getSelectedRow();
+                    if (row != -1) {
+                        int modelRow = tblFirmas.convertRowIndexToModel(row);
+                        int idCliente = (Integer) tblFirmas.getModel().getValueAt(modelRow, 0);
+                        Cliente cli = c.getClienteById(idCliente);
+                        if (cli != null) {
+                            new EditarFirmaDialog(Index.this, c, cli).setVisible(true);
+                            cargarDatosDashboard();
+                        }
+                    }
+                }
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(tblFirmas);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -233,15 +285,38 @@ public class Index extends javax.swing.JFrame {
         // Poblar tabla de E-Firmas
         tableModel.setRowCount(0);
         Map<Integer, EFirmas> firmas = c.getAllFirmas();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date hoy = new Date();
+
         for (EFirmas f : firmas.values()) {
             Cliente cli = c.getClienteById(f.getIdCliente());
             String nombreCliente = (cli != null) ? cli.nombre : "Cliente #" + f.getIdCliente();
             String rfcCliente = (cli != null) ? cli.rfc : "N/A";
+            
+            String estado = "Sin Datos";
+            try {
+                Date fExp = sdf.parse(f.fecha_expiracion);
+                long diffMs = fExp.getTime() - hoy.getTime();
+                long diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+                if (diffDays >= 365) {
+                    estado = "🟢 Vigente (" + (diffDays / 365) + " año/s)";
+                } else if (diffDays >= 30) {
+                    estado = "🟡 Próximo a vencer (" + (diffDays / 30) + " mes/es)";
+                } else {
+                    estado = "🔴 Vencido / < 1 mes";
+                }
+            } catch (Exception ex) {
+                // Formato incorrecto o nulo
+            }
+
             tableModel.addRow(new Object[]{
+                f.getIdCliente(),
                 nombreCliente,
                 rfcCliente,
                 f.fecha_expiracion,
-                f.fecha_renovacion
+                f.fecha_renovacion,
+                estado
             });
         }
     }

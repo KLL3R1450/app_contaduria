@@ -28,20 +28,20 @@ La aplicación está diseñada bajo el patrón **MVC**:
 
 ### 1. Refactorización y Optimización de la Caché
 * **Captura de IDs Generados**: Se modificaron `ClientesDAO.insertCliente`, `TercerosDAO.insertTercero` y `ContadoresDAO.insertContador` para retornar u obtener los IDs autogenerados por la base de datos tras la inserción y asignarlos directamente a las propiedades en memoria.
-* **Inserción Directa en Memoria**: En `Controlador.java`, cuando una inserción es exitosa, se añade el objeto directamente a los mapas locales (`clientes.put()`, `terceros.put()`, `contadores.put()`). Esto evita tener que volver a consultar y re-mapear toda la base de datos desde cero, mejorando drásticamente el rendimiento y corrigiendo un bug donde los contadores recién creados no se guardaban en la caché.
+* **Inserción Directa en Memoria**: En `Controlador.java`, cuando una inserción es exitosa, se añade el objeto directamente a los mapas locales (`clientes.put()`, `terceros.put()`, `contadores.put()`). Esto evita tener que volver a consultar y re-mapear toda la base de datos desde cero, mejorando drásticamente el rendimiento.
 
 ### 2. Refactorización del Manejo de Excepciones y Conectores
 * **Desacoplamiento de Swing de la persistencia**: Se eliminaron todas las dependencias y llamadas a `JOptionPane` en la capa DAO. Ahora los métodos de base de datos lanzan `RuntimeException` con causas explícitas en caso de fallo crítico SQL.
-* **Manejo Centralizado**: En `Controlador.cargarTodo()`, la carga de datos inicial está rodeada por un bloque `try-catch` unificado que captura cualquier error de conexión o consulta al arrancar y muestra un solo mensaje descriptivo al usuario.
-* **Visibilidad del Conector**: Se modificó `ConectorBD.getConexion()` de `protected` a `public` para permitir la instanciación de transacciones y sentencias preparadas de actualización del estado directamente en las consultas bajo demanda del Controlador.
+* **Manejo Centralizado**: En `Controlador.cargarTodo()`, la carga de datos inicial está rodeada por un bloque `try-catch` unificado que captura cualquier error de conexión o consulta al arrancar.
+* **Visibilidad del Conector**: Se modificó `ConectorBD.getConexion()` de `protected` a `public` para permitir la instanciación de transacciones y sentencias preparadas de actualización del estado directamente en las consultas bajo demanda del Controlador y las vistas auxiliares de inserción.
 
 ### 3. Corrección de Bugs Críticos de SQL y Delegación
 * **`TercerosDAO.java`**:
-  * Se corrigió la omisión de asignación de parámetros (`ct.setInt`) en `clienteTercero(...)`, que provocaba una excepción de parámetros faltantes al intentar asociar clientes con terceros.
-  * Se corrigieron errores tipográficos de nombres de tablas en sentencias SQL: `regiemenes_terceros` $\to$ `regimenes_terceros`, `regimenes_clientes` $\to$ `regimenes_terceros` (en los métodos de terceros) y `regimenes_tercero` $\to$ `regimenes_terceros`.
+  * Se corrigió la omisión de asignación de parámetros (`ct.setInt`) en `clienteTercero(...)` al asociar clientes con terceros.
+  * Se corrigieron errores tipográficos de nombres de tablas en sentencias SQL (`regiemenes_terceros` $\to$ `regimenes_terceros`, etc.).
 * **`Controlador.java`**:
-  * Se corrigió la delegación en `deleteRegimen`, que erróneamente llamaba a `addRegimen(r)` en lugar de a `deleteRegimen(r.getId())`.
-  * Se corrigió el control de éxito de creación de declaraciones, cambiando el retorno del DAO a `"correcto"` para sincronizar con la validación del controlador.
+  * Se corrigió la delegación en `deleteRegimen`, que erróneamente llamaba a `addRegimen(r)`.
+  * Se corrigió el control de éxito de creación de declaraciones, cambiando el retorno del DAO a `"correcto"`.
 
 ### 4. Rediseño Completo de la Interfaz con FlatLaf (Look and Feel)
 * **Dashboard Moderno (`Index.java`)**: 
@@ -59,3 +59,18 @@ La aplicación está diseñada bajo el patrón **MVC**:
   * **`VerListasContadores.java`**: JDialog que permite elegir un Contador a través de un ComboBox, ver su lista de clientes e indagar individualmente el historial de declaraciones mensuales.
   * **`DeclaracionesContadores.java`**: Formulario interactivo que lista la cartera del contador por mes y año seleccionado, usando JTable con CheckBoxes editables que persisten inmediatamente los estados al ser tildados/destildados.
   * **Acceso desde el Sidebar**: Se integraron accesos rápidos "Listas Contadores" y "Declaraciones" en el panel lateral de `Index.java`.
+
+### 6. Módulo de E-Firmas (Rama `efirmas`)
+* **Semáforo Visual en Dashboard**: Se modificó `Index.java` para incorporar una columna de semáforo de vigencia en base a fechas de expiración:
+  * 🟢 **Verde (Vigente)**: Expiración $\ge$ 1 año (365 días).
+  * 🟡 **Amarillo (Próximo a vencer)**: Expiración entre 1 mes y 1 año (30 a 365 días).
+  * 🔴 **Rojo (Vencido / Urgente)**: Expiración $<$ 1 mes.
+* **Ventana de Edición (`EditarFirmaDialog.java`)**: Formulario modal rápido que valida formatos e inserta o renueva firmas directo en base de datos.
+* **Interacción Rápida**:
+  * Doble clic en la tabla de firmas en `Index.java` abre directamente la edición de la firma.
+  * Al pulsar el botón "Editar E-Firma" (`cambiar1`) desde la vista de detalles de cliente, se despliega la pantalla modal.
+  * Al consultar la firma de un cliente que no tiene una registrada, un diálogo interactivo ofrece añadirla de inmediato.
+  * En la ventana de búsqueda de firmas, el botón **➕ Agregar** permite registrar una nueva si el cliente no posee una (evitando duplicados).
+
+### 7. Copiado Rápido al Portapapeles (SAT)
+* **Botón "📋 Copiar SAT"** (`BuscarPersonas.java`): Se añadió un botón para copiar rápidamente la información fiscal de la persona seleccionada al portapapeles en un formato amigable para el portal del SAT (Razón Social, RFC, Código Postal y listado de Regímenes traducidos).
