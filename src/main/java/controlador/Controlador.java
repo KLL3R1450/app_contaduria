@@ -12,8 +12,10 @@ import entidades.Declaracion;
 import entidades.EFirmas;
 import entidades.Regimenes;
 import entidades.Terceros;
+import entidades.Pago;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 
@@ -25,6 +27,7 @@ public class Controlador implements IControler{
     private TercerosDAO dBTerceros;
     private DeclaracionDAO dBDeclaraciones;
     private EFirmasDAO dBFirmas;
+    private persistencia.PagosDAO dBPagos;
     
     public Map<Integer,Contadores> contadores;
     public Map<Integer,Cliente> clientes;
@@ -58,6 +61,7 @@ public class Controlador implements IControler{
         dBTerceros = new TercerosDAO();
         dBDeclaraciones = new DeclaracionDAO();
         dBFirmas = new EFirmasDAO();
+        dBPagos = new persistencia.PagosDAO();
         contadores = new HashMap<>();
         clientes  = new HashMap<>();
         declaraciones = new HashMap<>();
@@ -411,5 +415,11 @@ public class Controlador implements IControler{
         return sql;
     }
 
+    public List<Pago> obtenerPagosPorCliente(int idCliente) {
+        return dBPagos.obtenerPagosPorCliente(idCliente);
+    }
 
+    public String registrarPago(Pago pago) {
+        return dBPagos.insertarPago(pago);
+    }
 }

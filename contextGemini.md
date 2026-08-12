@@ -74,3 +74,11 @@ La aplicación está diseñada bajo el patrón **MVC**:
 
 ### 7. Copiado Rápido al Portapapeles (SAT)
 * **Botón "📋 Copiar SAT"** (`BuscarPersonas.java`): Se añadió un botón para copiar rápidamente la información fiscal de la persona seleccionada al portapapeles en un formato amigable para el portal del SAT (Razón Social, RFC, Código Postal y listado de Regímenes traducidos).
+
+### 8. Módulo de Pagos y Recibos
+* **Persistencia**: Se implementó la tabla `pagos_clientes` para registrar los meses cobrados por cliente (con llaves únicas `id_cliente, anio, mes` para evitar cobros duplicados).
+* **Lógica del PDF**: Integración de la biblioteca `org.apache.pdfbox` para completar de forma automatizada los campos editables (`fecha`, `cliente`, `periodos`, y `monto`) de la plantilla `recibo.pdf` en la raíz del proyecto.
+* **Interfaz de Usuario**:
+  * Ventana modal interactiva `UI.GenerarReciboDialog` para seleccionar los periodos pendientes de pago, deshabilitar automáticamente los meses ya pagados, ingresar conceptos adicionales/extras de cobro (declaraciones adicionales, trámites especiales) y registrar el pago en lote (un registro por mes pagado) tras confirmación interactiva.
+  * Botón **💵 Generar Recibo** incorporado en el panel de acciones de `UI.BuscarPersonas` (habilitado únicamente para la búsqueda de clientes).
+

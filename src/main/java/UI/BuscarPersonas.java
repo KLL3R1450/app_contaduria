@@ -90,6 +90,13 @@ public class BuscarPersonas extends javax.swing.JDialog {
             }
         }
         
+        if ("clientes".equals(tipoPersona)) {
+            JButton btnGenerarRecibo = new JButton("💵 Generar Recibo");
+            btnGenerarRecibo.putClientProperty("JButton.buttonType", "roundRect");
+            btnGenerarRecibo.addActionListener(e -> accionGenerarRecibo());
+            actionPanel.add(btnGenerarRecibo);
+        }
+        
         JButton btnCopiarSAT = new JButton("📋 Copiar SAT");
         btnCopiarSAT.putClientProperty("JButton.buttonType", "roundRect");
         btnCopiarSAT.addActionListener(e -> accionCopiarSAT());
@@ -498,6 +505,20 @@ public class BuscarPersonas extends javax.swing.JDialog {
             detallesPersonas(id);
         } else {
             JOptionPane.showMessageDialog(this, "Por favor, seleccione un registro para ver detalles.");
+        }
+    }
+
+    private void accionGenerarRecibo() {
+        int fila = tabla.getSelectedRow();
+        if (fila != -1) {
+            int filaModelo = tabla.convertRowIndexToModel(fila);
+            Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
+            Cliente cl = c.getClienteById(id);
+            if (cl != null) {
+                new GenerarReciboDialog((java.awt.Window) this.getParent(), c, cl).setVisible(true);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione un cliente para generar su recibo.");
         }
     }
 
