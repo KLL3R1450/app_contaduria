@@ -82,3 +82,10 @@ La aplicación está diseñada bajo el patrón **MVC**:
   * Ventana modal interactiva `UI.GenerarReciboDialog` para seleccionar los periodos pendientes de pago, deshabilitar automáticamente los meses ya pagados, ingresar conceptos adicionales/extras de cobro (declaraciones adicionales, trámites especiales) y registrar el pago en lote (un registro por mes pagado) tras confirmación interactiva.
   * Botón **💵 Generar Recibo** incorporado en el panel de acciones de `UI.BuscarPersonas` (habilitado únicamente para la búsqueda de clientes).
 
+### 9. Mejoras, Corrección de Bugs y Visualizador de Pagos
+* **Buscador Dinámico de Clientes (`VerListasContadores.java`)**: Se añadió un campo de texto `JTextField` con un `DocumentListener` para filtrar en tiempo real los clientes que pertenecen a un contador específico por su nombre.
+* **Corrección de Regímenes (`CambiarRegimenes.java`)**: Se corrigió una omisión crítica en el constructor del diálogo que no asignaba el parámetro `tp` al atributo `this.tipoPersonas`, lo cual impedía persistir de forma correcta las modificaciones de regímenes tributarios de los clientes.
+* **Control de Versiones y Limpieza**: Actualización de `.gitignore` para ignorar la carpeta completa `.idea/` de configuración de IntelliJ y el directorio de salida de PDFs `recibos_generados/`, desvinculando estos elementos previamente rastreados del repositorio de Git sin borrarlos localmente.
+* **Módulo Ver Pagos y Deudas (`VerRecibosDialog.java` & `BuscarPersonas.java`)**:
+  * Adición del botón **📄 Ver Pagos** en la ventana de búsqueda de clientes.
+  * Implementación del diálogo `VerRecibosDialog` para visualizar gráficamente los 12 meses de cobro de un año seleccionado. Los pagos registrados aparecen en verde (con fecha e importe de pago), mientras que los meses pendientes/adeudos aparecen en rojo mostrando el monto a deber en base al honorario mensual del cliente. Muestra totales del año para control del despacho.

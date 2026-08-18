@@ -15,6 +15,7 @@ public class VerListasContadores extends JDialog {
 
     private final Controlador controlador;
     private JComboBox<String> comboContadores;
+    private JTextField txtFiltrarCliente;
     private JTable tablaClientes;
     private DefaultTableModel modelClientes;
     private ArrayList<Contadores> listaContadores;
@@ -30,15 +31,29 @@ public class VerListasContadores extends JDialog {
 
     private void initComponents() {
         setTitle("Listas de Clientes por Contador");
-        setMinimumSize(new Dimension(700, 450));
+        setMinimumSize(new Dimension(850, 450));
         setLayout(new BorderLayout(15, 15));
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         topPanel.add(new JLabel("Seleccionar Contador:"));
         comboContadores = new JComboBox<>();
-        comboContadores.setPreferredSize(new Dimension(250, 30));
+        comboContadores.setPreferredSize(new Dimension(220, 30));
         comboContadores.addActionListener(e -> cargarClientesContador());
         topPanel.add(comboContadores);
+
+        topPanel.add(new JLabel("Filtrar por Cliente:"));
+        txtFiltrarCliente = new JTextField();
+        txtFiltrarCliente.setPreferredSize(new Dimension(200, 30));
+        txtFiltrarCliente.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { cargarClientesContador(); }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { cargarClientesContador(); }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { cargarClientesContador(); }
+        });
+        topPanel.add(txtFiltrarCliente);
+
         add(topPanel, BorderLayout.NORTH);
 
         modelClientes = new DefaultTableModel(new Object[][]{}, new String[]{"ID Cliente", "Nombre", "RFC", "Honorarios"}) {
@@ -86,9 +101,13 @@ public class VerListasContadores extends JDialog {
 
         Contadores selected = listaContadores.get(idx);
         ArrayList<Cliente> clientes = controlador.getClientesByContador(selected.getId());
+        String filtro = txtFiltrarCliente.getText().trim().toLowerCase();
+
         for (Cliente cli : clientes) {
             if (cli != null) {
-                modelClientes.addRow(new Object[]{cli.id_persona, cli.nombre, cli.rfc, cli.honorarios});
+                if (filtro.isEmpty() || cli.nombre.toLowerCase().contains(filtro)) {
+                    modelClientes.addRow(new Object[]{cli.id_persona, cli.nombre, cli.rfc, cli.honorarios});
+                }
             }
         }
     }

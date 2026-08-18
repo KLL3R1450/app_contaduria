@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Custom Project Exclusions ###
+recibos_generados/
+.idea/

@@ -75,11 +75,6 @@ public class Index extends javax.swing.JFrame {
         sidebar.add(lblSubLogo);
         sidebar.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        // Botones de Acceso Rápido en la Barra Lateral
-        JButton btnDashboard = crearBotonSidebar(" Dashboard");
-        btnDashboard.addActionListener(e -> cargarDatosDashboard());
-        sidebar.add(btnDashboard);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
         JButton btnClientes = crearBotonSidebar(" Clientes");
         btnClientes.addActionListener(e -> abrirBuscarClientes());

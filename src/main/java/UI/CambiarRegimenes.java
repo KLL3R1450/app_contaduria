@@ -31,6 +31,7 @@ public class CambiarRegimenes extends javax.swing.JDialog {
         
         c = controler;
         persona = p;
+        this.tipoPersonas = tp;
         modeloActuales = new DefaultListModel();
         modeloDisponibles = new DefaultListModel();
         all = new ArrayList<>();
