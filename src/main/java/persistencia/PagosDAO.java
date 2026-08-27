@@ -11,30 +11,7 @@ import java.util.List;
 
 public class PagosDAO {
     private Connection conexion = ConectorBD.getConexion();
-
-    public PagosDAO() {
-        crearTablaPagosSiNoExiste();
-    }
-
-    private void crearTablaPagosSiNoExiste() {
-        String sql = "CREATE TABLE IF NOT EXISTS pagos_clientes ("
-                + "id_pago INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + "id_cliente INTEGER NOT NULL,"
-                + "anio INTEGER NOT NULL,"
-                + "mes INTEGER NOT NULL,"
-                + "monto INTEGER NOT NULL,"
-                + "fecha_pago TEXT NOT NULL,"
-                + "FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),"
-                + "UNIQUE(id_cliente, anio, mes)"
-                + ");";
-        try (Statement stmt = conexion.createStatement()) {
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al crear la tabla pagos_clientes: " + e.getMessage(), e);
-        }
-    }
-
+    
     public String insertarPago(Pago pago) {
         String sql = "INSERT INTO pagos_clientes(id_cliente, anio, mes, monto, fecha_pago) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conexion.prepareStatement(sql)) {

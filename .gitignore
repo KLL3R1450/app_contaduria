@@ -41,5 +41,6 @@ build/
 recibos_generados/
 .idea/
 
-data/Despacho_DB.db
-data/DespachoDB.db
+data/*
+
+.env
