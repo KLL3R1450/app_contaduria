@@ -26,6 +26,17 @@ public class AñadirCliente extends javax.swing.JDialog {
     private ArrayList<Object> quitados;
     private ArrayList<Object> all;
     private Clickeo l;
+
+    // Campos personalizados para registro opcional de E-Firma
+    private javax.swing.JCheckBox chkAgregarFirma;
+    private javax.swing.JTextField txtFExp;
+    private javax.swing.JTextField txtFRen;
+    private javax.swing.JTextField txtFCert;
+    private javax.swing.JTextField txtFKey;
+    private javax.swing.JTextField txtFPass;
+    private javax.swing.JButton btnFCert;
+    private javax.swing.JButton btnFKey;
+    private javax.swing.JButton btnFPass;
     
     
     public AñadirCliente(java.awt.Frame parent, boolean modal, Controlador controler) {
@@ -66,6 +77,7 @@ public class AñadirCliente extends javax.swing.JDialog {
 
         setResizable(false);
         setJMenuBar(null);
+        initFirmaPanel();
         setLocationRelativeTo(parent);
     }
     
@@ -86,6 +98,126 @@ public class AñadirCliente extends javax.swing.JDialog {
             CCon.addItem(con.nombre);
         }
     }
+
+    private void initFirmaPanel() {
+        setResizable(true);
+        setSize(new java.awt.Dimension(1250, 480));
+        setMinimumSize(new java.awt.Dimension(1250, 480));
+        setPreferredSize(new java.awt.Dimension(1250, 480));
+
+        java.awt.Container originalContentPane = getContentPane();
+        javax.swing.JPanel newContentPane = new javax.swing.JPanel(new java.awt.BorderLayout(15, 15));
+
+        javax.swing.JPanel rightPanel = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        rightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Firma Electrónica (Opcional)"));
+        
+        java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+        gbc.insets = new java.awt.Insets(6, 6, 6, 6);
+        gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        
+        chkAgregarFirma = new javax.swing.JCheckBox("Registrar E-Firma con el cliente");
+        chkAgregarFirma.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        rightPanel.add(chkAgregarFirma, gbc);
+        
+        javax.swing.JPanel fieldsPanel = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints sGbc = new java.awt.GridBagConstraints();
+        sGbc.insets = new java.awt.Insets(4, 4, 4, 4);
+        sGbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        
+        // Expiration
+        sGbc.gridx = 0; sGbc.gridy = 0; sGbc.weightx = 0.3;
+        fieldsPanel.add(new javax.swing.JLabel("Expira (YYYY-MM-DD):"), sGbc);
+        sGbc.gridx = 1; sGbc.weightx = 0.7;
+        txtFExp = new javax.swing.JTextField(10);
+        txtFExp.putClientProperty("JTextField.roundRect", true);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        txtFExp.setText(sdf.format(new java.util.Date()));
+        fieldsPanel.add(txtFExp, sGbc);
+        
+        // Renewal
+        sGbc.gridx = 0; sGbc.gridy = 1; sGbc.weightx = 0.3;
+        fieldsPanel.add(new javax.swing.JLabel("Renovación (YYYY-MM-DD):"), sGbc);
+        sGbc.gridx = 1; sGbc.weightx = 0.7;
+        txtFRen = new javax.swing.JTextField(10);
+        txtFRen.putClientProperty("JTextField.roundRect", true);
+        txtFRen.setText(sdf.format(new java.util.Date()));
+        fieldsPanel.add(txtFRen, sGbc);
+        
+        // Certificate
+        sGbc.gridx = 0; sGbc.gridy = 2; sGbc.weightx = 0.3;
+        fieldsPanel.add(new javax.swing.JLabel("Certificado (.cer):"), sGbc);
+        sGbc.gridx = 1; sGbc.weightx = 0.7;
+        javax.swing.JPanel cPanel = new javax.swing.JPanel(new java.awt.BorderLayout(5, 0));
+        txtFCert = new javax.swing.JTextField();
+        txtFCert.putClientProperty("JTextField.roundRect", true);
+        cPanel.add(txtFCert, java.awt.BorderLayout.CENTER);
+        btnFCert = new javax.swing.JButton("Examinar...");
+        btnFCert.putClientProperty("JButton.buttonType", "roundRect");
+        btnFCert.addActionListener(e -> examinarFirmaArchivo(txtFCert, "Archivos Certificado (*.cer)", "cer"));
+        cPanel.add(btnFCert, java.awt.BorderLayout.EAST);
+        fieldsPanel.add(cPanel, sGbc);
+        
+        // Key
+        sGbc.gridx = 0; sGbc.gridy = 3; sGbc.weightx = 0.3;
+        fieldsPanel.add(new javax.swing.JLabel("Llave (.key):"), sGbc);
+        sGbc.gridx = 1; sGbc.weightx = 0.7;
+        javax.swing.JPanel kPanel = new javax.swing.JPanel(new java.awt.BorderLayout(5, 0));
+        txtFKey = new javax.swing.JTextField();
+        txtFKey.putClientProperty("JTextField.roundRect", true);
+        kPanel.add(txtFKey, java.awt.BorderLayout.CENTER);
+        btnFKey = new javax.swing.JButton("Examinar...");
+        btnFKey.putClientProperty("JButton.buttonType", "roundRect");
+        btnFKey.addActionListener(e -> examinarFirmaArchivo(txtFKey, "Archivos Key (*.key)", "key"));
+        kPanel.add(btnFKey, java.awt.BorderLayout.EAST);
+        fieldsPanel.add(kPanel, sGbc);
+        
+        // Pass
+        sGbc.gridx = 0; sGbc.gridy = 4; sGbc.weightx = 0.3;
+        fieldsPanel.add(new javax.swing.JLabel("Contraseña (.txt):"), sGbc);
+        sGbc.gridx = 1; sGbc.weightx = 0.7;
+        javax.swing.JPanel pPanel = new javax.swing.JPanel(new java.awt.BorderLayout(5, 0));
+        txtFPass = new javax.swing.JTextField();
+        txtFPass.putClientProperty("JTextField.roundRect", true);
+        pPanel.add(txtFPass, java.awt.BorderLayout.CENTER);
+        btnFPass = new javax.swing.JButton("Examinar...");
+        btnFPass.putClientProperty("JButton.buttonType", "roundRect");
+        btnFPass.addActionListener(e -> examinarFirmaArchivo(txtFPass, "Archivos de texto (*.txt)", "txt"));
+        pPanel.add(btnFPass, java.awt.BorderLayout.EAST);
+        fieldsPanel.add(pPanel, sGbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; gbc.weighty = 1.0;
+        gbc.fill = java.awt.GridBagConstraints.BOTH;
+        rightPanel.add(fieldsPanel, gbc);
+        
+        newContentPane.add(originalContentPane, java.awt.BorderLayout.WEST);
+        newContentPane.add(rightPanel, java.awt.BorderLayout.CENTER);
+        setContentPane(newContentPane);
+        
+        java.util.function.Consumer<Boolean> toggleFields = enabled -> {
+            txtFExp.setEnabled(enabled);
+            txtFRen.setEnabled(enabled);
+            txtFCert.setEnabled(enabled);
+            txtFKey.setEnabled(enabled);
+            txtFPass.setEnabled(enabled);
+            btnFCert.setEnabled(enabled);
+            btnFKey.setEnabled(enabled);
+            btnFPass.setEnabled(enabled);
+        };
+        
+        toggleFields.accept(false);
+        chkAgregarFirma.addActionListener(e -> toggleFields.accept(chkAgregarFirma.isSelected()));
+    }
+
+    private void examinarFirmaArchivo(javax.swing.JTextField textField, String desc, String ext) {
+        javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(desc, ext));
+        int selection = fileChooser.showOpenDialog(this);
+        if (selection == javax.swing.JFileChooser.APPROVE_OPTION) {
+            textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        }
+    }
     
     private void borrarValores(){
         TCorr.setText("");
@@ -98,6 +230,25 @@ public class AñadirCliente extends javax.swing.JDialog {
         añadidos.clear();
         quitados.clear();
         modeloActuales.removeAllElements();
+        
+        if (chkAgregarFirma != null) {
+            chkAgregarFirma.setSelected(false);
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            String hoy = sdf.format(new java.util.Date());
+            txtFExp.setText(hoy);
+            txtFRen.setText(hoy);
+            txtFCert.setText("");
+            txtFKey.setText("");
+            txtFPass.setText("");
+            txtFExp.setEnabled(false);
+            txtFRen.setEnabled(false);
+            txtFCert.setEnabled(false);
+            txtFKey.setEnabled(false);
+            txtFPass.setEnabled(false);
+            btnFCert.setEnabled(false);
+            btnFKey.setEnabled(false);
+            btnFPass.setEnabled(false);
+        }
     }
     
 
@@ -383,7 +534,9 @@ public class AñadirCliente extends javax.swing.JDialog {
             return;
         }
         
-        if(!Validator.validarRFC(TRfc.getText())){
+        String formatedRFC = TRfc.getText().toUpperCase();
+        
+        if(!Validator.validarRFC(formatedRFC)){
             JOptionPane.showMessageDialog(rootPane, "RFC no valido");
             return;
         }
@@ -412,15 +565,32 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         Cliente cliente = new Cliente(
                 TNom.getText(), 
-                  TRfc.getText(), 
+                  formatedRFC, 
                    TCp.getText(),
                 TCorr.getText(), 
                  montoH, 
             idContador);
         
         cliente.idsRegimenes = idReg;
+
+        entidades.EFirmas firma = null;
+        if (chkAgregarFirma != null && chkAgregarFirma.isSelected()) {
+            String fExp = txtFExp.getText().trim();
+            String fRen = txtFRen.getText().trim();
+            String rCert = txtFCert.getText().trim();
+            String rKey = txtFKey.getText().trim();
+            String rPass = txtFPass.getText().trim();
+            
+            if (!fExp.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$") ||
+                !fRen.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {
+                JOptionPane.showMessageDialog(rootPane, "Formato de fecha de firma inválido. Utilice AAAA-MM-DD.");
+                return;
+            }
+            
+            firma = new entidades.EFirmas(fExp, fRen, 0, rCert, rKey, rPass);
+        }
         
-        String respuesta = c.insertCliente(cliente);
+        String respuesta = c.insertCliente(cliente, firma);
         
         if(!"correcto".equals(respuesta)) {
             JOptionPane.showMessageDialog(rootPane, respuesta);

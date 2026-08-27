@@ -126,11 +126,18 @@ public class Controlador implements IControler{
         return clientes;
     }
         
-    public String insertCliente( Cliente cliente){
-        String respuesta =  dBClientes.insertCliente(cliente);
+    public String insertCliente(Cliente cliente) {
+        return insertCliente(cliente, null);
+    }
+
+    public String insertCliente(Cliente cliente, EFirmas firma){
+        String respuesta =  dBClientes.insertCliente(cliente, firma);
         
         if("correcto".equals(respuesta)){
             clientes.put(cliente.id_persona, cliente);
+            if (firma != null) {
+                eFirmas.put(cliente.id_persona, firma);
+            }
         }
         
         return respuesta;
@@ -265,13 +272,27 @@ public class Controlador implements IControler{
     }
     
     public String renovarFirma(String fechaE, String fechaR, int idCliente){
-        String respuesta = dBFirmas.renovacion(fechaE, fechaR, idCliente);
+        EFirmas existing = eFirmas.get(idCliente);
+        String rCert = (existing != null) ? existing.ruta_certificado : null;
+        String rKey = (existing != null) ? existing.ruta_key : null;
+        String pass = (existing != null) ? existing.contrasena : null;
+        return renovarFirma(fechaE, fechaR, rCert, rKey, pass, idCliente);
+    }
+
+    public String renovarFirma(String fechaE, String fechaR, String rCert, String rKey, String pass, int idCliente){
+        String respuesta = dBFirmas.renovacion(fechaE, fechaR, rCert, rKey, pass, idCliente);
         
         if("correcto".equals(respuesta)){
             EFirmas ef = eFirmas.get(idCliente);
-            
-            ef.fecha_expiracion = fechaE;
-            ef.fecha_renovacion = fechaR;
+            if (ef != null) {
+                ef.fecha_expiracion = fechaE;
+                ef.fecha_renovacion = fechaR;
+                ef.ruta_certificado = rCert;
+                ef.ruta_key = rKey;
+                ef.contrasena = pass;
+            } else {
+                eFirmas.put(idCliente, new EFirmas(fechaE, fechaR, idCliente, rCert, rKey, pass));
+            }
         }
         
         return respuesta;

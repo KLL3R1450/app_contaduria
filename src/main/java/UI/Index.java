@@ -22,7 +22,7 @@ import java.util.Date;
 public class Index extends javax.swing.JFrame {
 
     private static Controlador c;
-    private boolean isDarkMode = true;
+    private boolean isDarkMode = false;
 
     private JLabel lblTotalClientes;
     private JLabel lblTotalTerceros;
@@ -320,10 +320,10 @@ public class Index extends javax.swing.JFrame {
         FlatAnimatedLafChange.showSnapshot();
         try {
             if (!isDarkMode) {
-                UIManager.setLookAndFeel(new FlatLightLaf());
+                UIManager.setLookAndFeel(new FlatDarkLaf());
                 isDarkMode = true;
             } else {
-                UIManager.setLookAndFeel(new FlatDarkLaf());
+                UIManager.setLookAndFeel(new FlatLightLaf());
                 isDarkMode = false;
             }
             SwingUtilities.updateComponentTreeUI(this);

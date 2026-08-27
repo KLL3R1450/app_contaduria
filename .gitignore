@@ -40,3 +40,6 @@ build/
 ### Custom Project Exclusions ###
 recibos_generados/
 .idea/
+
+data/Despacho_DB.db
+data/DespachoDB.db

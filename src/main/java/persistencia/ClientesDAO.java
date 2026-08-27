@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import entidades.Cliente;
 import entidades.Terceros;
+import entidades.EFirmas;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,7 +25,11 @@ public class ClientesDAO {
      * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regesa
      * "correcto"
      */
-    public String insertCliente(Cliente cliente){
+    public String insertCliente(Cliente cliente) {
+        return insertCliente(cliente, null);
+    }
+
+    public String insertCliente(Cliente cliente, EFirmas firma){
         String sql = "INSERT INTO clientes(nombre_cliente,rfc_cliente,cp_cliente,correo_cliente,m_honorarios_cliente,id_contador,id_estado) VALUES (?,?,?,?,?,?,?)";
         int id = -1;
         
@@ -60,6 +65,14 @@ public class ClientesDAO {
                 insertRegimenesClientes(id, cliente.idsRegimenes);
             }
             System.out.println("regimenes");
+            
+            if(id > 0 && firma != null) {
+                firma.setIdCliente(id);
+                EFirmasDAO eFDAO = new EFirmasDAO();
+                eFDAO.insertFirmaTransaccional(firma, conexion);
+                System.out.println("firma insertada transaccionalmente");
+            }
+
             conexion.commit();
             return "correcto";
             
@@ -69,7 +82,7 @@ public class ClientesDAO {
                 if(conexion != null){
                     
                     conexion.rollback();
-                    return "Transaccion revertida";
+                    return "Transaccion revertida: " + e.getMessage();
                     
                 }
                 

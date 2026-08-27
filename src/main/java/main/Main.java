@@ -11,7 +11,7 @@ import entidades.Cliente;
 public class Main {
     public static void main(String[] args) {
         try {
-            com.formdev.flatlaf.FlatDarkLaf.setup();
+            com.formdev.flatlaf.FlatLightLaf.setup();
         } catch(Exception ex) {
             System.err.println("Fallo al iniciar FlatLaf: " + ex.getMessage());
         }
