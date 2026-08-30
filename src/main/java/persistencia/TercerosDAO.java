@@ -219,61 +219,92 @@ public class TercerosDAO {
         }
     }
     
-    /**
-     * Funcion que regresa todos los terceros activos de la base de datos
-     * @return Un Map con los terceros 
-     */
-    public Map<Integer,Terceros> getTerceros(){
-        Map<Integer, Terceros> listaTerceros = new HashMap<>();
-                
-        try{
-            String sql = "SELECT * FROM terceros";
-            PreparedStatement getTerceros = conexion.prepareStatement(sql);
-            
-            ResultSet rs = getTerceros.executeQuery();
-            
+    public java.util.List<Terceros> getTercerosLigeros() {
+        String sql = "SELECT id_tercero, nombre_tercero FROM terceros WHERE id_estado = 1";
+        java.util.List<Terceros> lista = new java.util.ArrayList<>();
+        try(PreparedStatement ps = conexion.prepareStatement(sql); ResultSet rs = ps.executeQuery()){
             while(rs.next()){
                 Terceros t = new Terceros(rs.getInt("id_tercero"));
                 t.nombre = rs.getString("nombre_tercero");
-                t.rfc = rs.getString("rfc_tercero");
-                t.cp = rs.getString("cp_tercero");
-                t.correo = rs.getString("correo_tercero");
-                
-                listaTerceros.put(t.id_persona,t);                
+                lista.add(t);
             }
-            
-            getTerceros.close();
-            rs.close();
-            
-        }catch(SQLException ex){
-            throw new RuntimeException("Error al obtener terceros: " + ex.getMessage(), ex);
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener terceros ligeros: " + e.getMessage(), e);
         }
-        
-        try{
-            String sql = "SELECT id_tercero,id_regimen FROM regimenes_terceros";
-            PreparedStatement reCl = conexion.prepareStatement(sql);
-            
-            ResultSet rs = reCl.executeQuery();
-            
-            while(rs.next()){
-                int id_tercero = rs.getInt("id_tercero");
-                
-                if(listaTerceros.containsKey(id_tercero)){
-                    Terceros t = listaTerceros.get(id_tercero);
+        return lista;
+    }
+
+    public Terceros getTerceroById(int id) {
+        String sql = "SELECT * FROM terceros WHERE id_tercero = ? AND id_estado = 1";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    Terceros t = new Terceros(rs.getInt("id_tercero"));
+                    t.nombre = rs.getString("nombre_tercero");
+                    t.rfc = rs.getString("rfc_tercero");
+                    t.cp = rs.getString("cp_tercero");
+                    t.correo = rs.getString("correo_tercero");
                     
-                    t.idsRegimenes.add(rs.getInt("id_regimen"));
+                    // Cargar regimenes de este tercero
+                    String sqlReg = "SELECT id_regimen FROM regimenes_terceros WHERE id_tercero = ?";
+                    try(PreparedStatement psReg = conexion.prepareStatement(sqlReg)){
+                        psReg.setInt(1, id);
+                        try(ResultSet rsReg = psReg.executeQuery()){
+                            while(rsReg.next()){
+                                t.idsRegimenes.add(rsReg.getInt("id_regimen"));
+                            }
+                        }
+                    }
+                    return t;
                 }
             }
-            
-            rs.close();
-            reCl.close();
-            
-        }catch(SQLException ex){
-            throw new RuntimeException("Error al obtener regimenes de los terceros: " + ex.getMessage(), ex);
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener tercero por ID: " + e.getMessage(), e);
         }
-        
-        return listaTerceros;
+        return null;
     }
+
+    public String[] getDatosSatTercero(int id) {
+        String sql = "SELECT nombre_tercero, rfc_tercero, cp_tercero, regimenes_fiscales FROM vw_copiar_sat_terceros WHERE id_tercero = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    return new String[]{
+                        rs.getString("nombre_tercero"),
+                        rs.getString("rfc_tercero"),
+                        rs.getString("cp_tercero"),
+                        rs.getString("regimenes_fiscales")
+                    };
+                }
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener datos SAT del tercero: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public java.util.ArrayList<Terceros> getTercerosDeClienteObj(int idCliente) {
+        java.util.ArrayList<Terceros> lista = new java.util.ArrayList<>();
+        String sql = "SELECT t.id_tercero, t.nombre_tercero FROM terceros t " +
+                     "JOIN terceros_clientes tc ON t.id_tercero = tc.id_tercero " +
+                     "WHERE tc.id_cliente = ? AND t.id_estado = 1";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idCliente);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    Terceros t = new Terceros(rs.getInt("id_tercero"));
+                    t.nombre = rs.getString("nombre_tercero");
+                    lista.add(t);
+                }
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener terceros del cliente: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     
     /***
      * Funcion que elimina un regimen de un tercero

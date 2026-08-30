@@ -120,14 +120,23 @@ public class Index extends javax.swing.JFrame {
         // Header superior
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        
+        JPanel textHeader = new JPanel(new BorderLayout());
         JLabel lblHeaderTitle = new JLabel("Bienvenido de nuevo");
         lblHeaderTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         JLabel lblHeaderSub = new JLabel("Resumen general del estado de tus clientes");
         lblHeaderSub.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblHeaderSub.setForeground(UIManager.getColor("Label.disabledForeground"));
+        textHeader.add(lblHeaderTitle, BorderLayout.NORTH);
+        textHeader.add(lblHeaderSub, BorderLayout.SOUTH);
         
-        headerPanel.add(lblHeaderTitle, BorderLayout.NORTH);
-        headerPanel.add(lblHeaderSub, BorderLayout.SOUTH);
+        JButton btnRefrescar = new JButton("Refrescar");
+        btnRefrescar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnRefrescar.putClientProperty("JButton.buttonType", "roundRect");
+        btnRefrescar.addActionListener(e -> cargarDatosDashboard());
+        
+        headerPanel.add(textHeader, BorderLayout.WEST);
+        headerPanel.add(btnRefrescar, BorderLayout.EAST);
         contentPanel.add(headerPanel, BorderLayout.NORTH);
 
         // Área Central: Métrica + Tabla
@@ -162,7 +171,7 @@ public class Index extends javax.swing.JFrame {
 
         tableModel = new DefaultTableModel(
             new Object[][]{},
-            new String[]{"ID Cliente", "Cliente", "RFC", "Fecha Expiración", "Fecha Renovación", "Estado"}
+            new String[]{"ID Cliente", "Cliente", "RFC", "Fecha Expiración", "Estado"}
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -182,7 +191,7 @@ public class Index extends javax.swing.JFrame {
         tblFirmas.getColumnModel().getColumn(0).setPreferredWidth(0);
 
         // Renderizador de Semáforo
-        tblFirmas.getColumnModel().getColumn(5).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+        tblFirmas.getColumnModel().getColumn(4).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component cComp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -272,48 +281,66 @@ public class Index extends javax.swing.JFrame {
     private void cargarDatosDashboard() {
         if (c == null) return;
 
-        // Cargar contadores rápidos
-        lblTotalClientes.setText(String.valueOf(c.getAllClientes().size()));
-        lblTotalTerceros.setText(String.valueOf(c.getTerceros().size()));
-        lblTotalContadores.setText(String.valueOf(c.getAllContadores().size()));
+        setEnabled(false);
 
-        // Poblar tabla de E-Firmas
-        tableModel.setRowCount(0);
-        Map<Integer, EFirmas> firmas = c.getAllFirmas();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date hoy = new Date();
+        SwingWorker<java.util.List<Object[]>, Void> worker = new SwingWorker<>() {
+            private int totalClientes = 0;
+            private int totalTerceros = 0;
+            private int totalContadores = 0;
 
-        for (EFirmas f : firmas.values()) {
-            Cliente cli = c.getClienteById(f.getIdCliente());
-            String nombreCliente = (cli != null) ? cli.nombre : "Cliente #" + f.getIdCliente();
-            String rfcCliente = (cli != null) ? cli.rfc : "N/A";
-            
-            String estado = "Sin Datos";
-            try {
-                Date fExp = sdf.parse(f.fecha_expiracion);
-                long diffMs = fExp.getTime() - hoy.getTime();
-                long diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-                if (diffDays >= 365) {
-                    estado = "🟢 Vigente (" + (diffDays / 365) + " año/s)";
-                } else if (diffDays >= 30) {
-                    estado = "🟡 Próximo a vencer (" + (diffDays / 30) + " mes/es)";
-                } else {
-                    estado = "🔴 Vencido / < 1 mes";
-                }
-            } catch (Exception ex) {
-                // Formato incorrecto o nulo
+            @Override
+            protected java.util.List<Object[]> doInBackground() throws Exception {
+                totalClientes = c.getClientesLigeros().size();
+                totalTerceros = c.getTercerosLigeros().size();
+                totalContadores = c.getAllContadores().size();
+                return c.obtenerSemaforoDashboard();
             }
 
-            tableModel.addRow(new Object[]{
-                f.getIdCliente(),
-                nombreCliente,
-                rfcCliente,
-                f.fecha_expiracion,
-                f.fecha_renovacion,
-                estado
-            });
-        }
+            @Override
+            protected void done() {
+                try {
+                    java.util.List<Object[]> firmas = get();
+                    lblTotalClientes.setText(""+totalClientes);
+                    lblTotalTerceros.setText(""+totalTerceros);
+                    lblTotalContadores.setText(""+totalContadores);
+
+                    tableModel.setRowCount(0);
+                    for (Object[] f : firmas) {
+                        int idCliente = (Integer) f[0];
+                        String nombreCliente = (String) f[1];
+                        String rfcCliente = (String) f[2];
+                        String fechaExp = (String) f[3];
+                        String estadoAlerta = (String) f[4];
+                        int diasRestantes = (Integer) f[5];
+
+                        String estado = "Sin Datos";
+                        if ("VIGENTE".equals(estadoAlerta)) {
+                            estado = "Vigente (" + (diasRestantes / 365) + " año/s)";
+                        } else if ("PROXIMA".equals(estadoAlerta)) {
+                            estado = "Próximo a vencer (" + (diasRestantes / 30) + " mes/es)";
+                        } else if ("URGENTE".equals(estadoAlerta) || "VENCIDA".equals(estadoAlerta)) {
+                            estado = "Vencido / < 1 mes";
+                        }
+
+                        tableModel.addRow(new Object[]{
+                            idCliente,
+                            nombreCliente,
+                            rfcCliente,
+                            fechaExp,
+                            estado
+                        });
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(Index.this, 
+                        "Error al conectar con la base de datos central:\n" + ex.getMessage(), 
+                        "Error de Red", 
+                        JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    setEnabled(true);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void alternarTema() {

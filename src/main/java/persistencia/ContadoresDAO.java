@@ -38,7 +38,6 @@ public class ContadoresDAO {
                         c.getString("contacto_contador")
                 );
                 
-                co.idsClientes = new ClientesDAO().getClientesDeContador(co.getId());
                 
                 contadores.put(co.getId(),co);
             }

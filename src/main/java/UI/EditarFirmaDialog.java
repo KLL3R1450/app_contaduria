@@ -192,7 +192,6 @@ public class EditarFirmaDialog extends JDialog {
                 psInsert.setString(6, rPass);
                 psInsert.executeUpdate();
                 
-                controlador.getAllFirmas().put(idCliente, new EFirmas(fExp, fRen, idCliente, rCert, rKey, rPass));
                 return "correcto";
             }
         } catch (java.sql.SQLException ex) {

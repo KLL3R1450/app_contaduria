@@ -129,60 +129,95 @@ public class ClientesDAO {
     }
     
     
-    /***
-     * Funcion que retorna todos los clientes, con estatus de Activo, y los guarda en una varible de tipo 
-     * Map para su facilidad de busqueda por ID
-     * @return Un Map de tipo Integer,Cliente con todos los clientes activos
-     */
-    public Map<Integer,Cliente> getClientes(){
-        String sql = "SELECT * FROM clientes WHERE id_estado = 1";
-        Map<Integer,Cliente> cls = new HashMap<>();
-
-
-        try(PreparedStatement getC = conexion.prepareStatement(sql)){
-            ResultSet clientes = getC.executeQuery();
-
-            while(clientes.next()){
-                Cliente c = new Cliente(clientes.getInt("id_cliente"));
-                c.nombre = clientes.getString("nombre_cliente");
-                c.rfc = clientes.getString("rfc_cliente");
-                c.cp = clientes.getString("cp_cliente");
-                c.correo = clientes.getString("correo_cliente");
-                c.honorarios = clientes.getInt("m_honorarios_cliente");
-                c.id_contador = clientes.getInt("id_contador");
-                
-                cls.put(c.id_persona, c);
+    public java.util.List<Cliente> getClientesLigeros() {
+        String sql = "SELECT id_cliente, nombre_cliente FROM vw_clientes_activos";
+        java.util.List<Cliente> lista = new java.util.ArrayList<>();
+        try(PreparedStatement ps = conexion.prepareStatement(sql); ResultSet rs = ps.executeQuery()){
+            while(rs.next()){
+                Cliente c = new Cliente(rs.getInt("id_cliente"));
+                c.nombre = rs.getString("nombre_cliente");
+                lista.add(c);
             }
-            
-            getC.close();
-            clientes.close();
-
         }catch(SQLException e){
-            throw new RuntimeException("Fallo al obtener clientes de la base de datos: " + e.getMessage(), e);
+            throw new RuntimeException("Error al obtener clientes ligeros: " + e.getMessage(), e);
         }
+        return lista;
+    }
 
-        sql = "SELECT id_cliente,id_regimen FROM regimenes_clientes";
-        try(PreparedStatement getRC = conexion.prepareStatement(sql)){
-            ResultSet rg = getRC.executeQuery();
-
-            while(rg.next()){
-                int idC = rg.getInt("id_cliente");
-
-                if(cls.containsKey(idC)){
-                    Cliente c = cls.get(idC);
-
-                    c.idsRegimenes.add(rg.getInt("id_regimen"));
-
+    public Cliente getClienteById(int id) {
+        String sql = "SELECT * FROM vw_clientes_activos WHERE id_cliente = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    Cliente c = new Cliente(rs.getInt("id_cliente"));
+                    c.nombre = rs.getString("nombre_cliente");
+                    c.rfc = rs.getString("rfc_cliente");
+                    c.cp = rs.getString("cp_cliente");
+                    c.correo = rs.getString("correo_cliente");
+                    c.honorarios = rs.getInt("m_honorarios_cliente");
+                    c.id_contador = rs.getInt("id_contador");
+                    
+                    // Cargar regimenes de este cliente
+                    String sqlReg = "SELECT id_regimen FROM regimenes_clientes WHERE id_cliente = ?";
+                    try(PreparedStatement psReg = conexion.prepareStatement(sqlReg)){
+                        psReg.setInt(1, id);
+                        try(ResultSet rsReg = psReg.executeQuery()){
+                            while(rsReg.next()){
+                                c.idsRegimenes.add(rsReg.getInt("id_regimen"));
+                            }
+                        }
+                    }
+                    return c;
                 }
             }
-            getRC.close();
-            rg.close();
-        }catch(SQLException ex){
-            throw new RuntimeException("Fallo al obtener regimenes de clientes: " + ex.getMessage(), ex);
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener cliente por ID: " + e.getMessage(), e);
         }
-
-        return cls;
+        return null;
     }
+
+    public String[] getDatosSatCliente(int id) {
+        String sql = "SELECT nombre_cliente, rfc_cliente, cp_cliente, regimenes_fiscales FROM vw_copiar_sat_clientes WHERE id_cliente = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    return new String[]{
+                        rs.getString("nombre_cliente"),
+                        rs.getString("rfc_cliente"),
+                        rs.getString("cp_cliente"),
+                        rs.getString("regimenes_fiscales")
+                    };
+                }
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener datos SAT del cliente: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public java.util.ArrayList<Cliente> getClientesDeContadorObj(int idContador) {
+        java.util.ArrayList<Cliente> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id_cliente, nombre_cliente, rfc_cliente, m_honorarios_cliente FROM vw_clientes_activos WHERE id_contador = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idContador);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    Cliente c = new Cliente(rs.getInt("id_cliente"));
+                    c.nombre = rs.getString("nombre_cliente");
+                    c.rfc = rs.getString("rfc_cliente");
+                    c.honorarios = rs.getInt("m_honorarios_cliente");
+                    lista.add(c);
+                }
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener clientes del contador: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
+
     
     /**
      * Elimina un Regimen del cliente especificado de la tabla Regimenes-Clientes
@@ -317,32 +352,7 @@ public class ClientesDAO {
         }
     }
     
-    /**
-     * Funcion que obtiene los clientes que estan relacionados con un contador en especifico
-     * @param idContador Variable de tipo int que contiene el Id del contador del cual buscaremos sus clientes
-     * @return Una variable de tipo ArrayList con los Ids de los clientes del contador especificado
-     */
-    protected ArrayList<Integer> getClientesDeContador(int idContador){
-        ArrayList<Integer> listaClientes = new ArrayList<>();
-        
-        String sql = "SELECT id_cliente FROM clientes WHERE id_contador = ?";
-        
-        try(PreparedStatement lc = conexion.prepareStatement(sql)){
-            
-            lc.setInt(1, idContador);
-            
-            ResultSet rs = lc.executeQuery();
-            
-            while(rs.next()){
-                listaClientes.add(rs.getInt("id_cliente"));
-            }
-            
-            
-        }catch(SQLException ex){
-            System.err.println("Erro al obtener los clientes del contador: " + ex.getMessage());
-        } 
-        return listaClientes;
-    }
+
     
     // Funciones nuevas
     

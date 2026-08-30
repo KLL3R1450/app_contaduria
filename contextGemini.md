@@ -9,9 +9,9 @@ Este documento sirve como resumen técnico de la arquitectura, patrones de imple
 La aplicación está diseñada bajo el patrón **MVC**:
 
 * **Modelo (`entidades/`)**: Contiene las clases de dominio (`Cliente`, `Contadores`, `Declaracion`, `EFirmas`, `Personas`, `Regimenes`, `Terceros`). `Cliente` y `Terceros` heredan de la clase base abstracta `Personas`.
-* **Controlador (`controlador/`)**: La lógica de negocio está centralizada en `Controlador.java` (un Singleton). Este mantiene estructuras en memoria (Maps y Lists) que funcionan como caché del sistema para evitar lecturas repetitivas al disco SQLite.
-* **Persistencia (`persistencia/`)**: Clases DAO (`ClientesDAO`, `ContadoresDAO`, `DeclaracionDAO`, `EFirmasDAO`, `RegimenesDAO`, `TercerosDAO`) que se comunican con SQLite utilizando JDBC directo (`data/DespachoDB.db`).
-* **Vistas (`UI/`)**: Formularios de interfaz gráfica de usuario Swing.
+* **Controlador (`controlador/`)**: La lógica de negocio está centralizada en `Controlador.java` (un Singleton). Únicamente mantiene en memoria colecciones de datos mayormente estáticos (catálogos de `regimenes` y `contadores`). La caché de datos dinámicos (`clientes`, `terceros`, `eFirmas`, `declaraciones`) se eliminó para soportar lecturas y escrituras directas bajo demanda a la base de datos (on-demand), ideal para ambientes multiusuario.
+* **Persistencia (`persistencia/`)**: Clases DAO (`ClientesDAO`, `ContadoresDAO`, `DeclaracionDAO`, `EFirmasDAO`, `RegimenesDAO`, `TercerosDAO`) que se comunican con MySQL utilizando JDBC directo y vistas de base de datos optimizadas.
+* **Vistas (`UI/`)**: Formularios de interfaz gráfica de usuario Swing cargados asíncronamente con `SwingWorker`.
 
 ---
 
@@ -19,7 +19,7 @@ La aplicación está diseñada bajo el patrón **MVC**:
 
 * **Lenguaje**: Java 21 (LTS) - *Actualizado desde Java 8*
 * **Gestor de dependencias**: Maven (`pom.xml`)
-* **Base de datos**: SQLite (Driver `sqlite-jdbc` versión `3.50.1.0`)
+* **Base de datos**: MySQL (Centralizado y configurado mediante `.env`)
 * **Aspecto Visual**: FlatLaf & FlatLaf-Extras (versión `3.5.2`)
 
 ---
@@ -89,3 +89,25 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Módulo Ver Pagos y Deudas (`VerRecibosDialog.java` & `BuscarPersonas.java`)**:
   * Adición del botón **📄 Ver Pagos** en la ventana de búsqueda de clientes.
   * Implementación del diálogo `VerRecibosDialog` para visualizar gráficamente los 12 meses de cobro de un año seleccionado. Los pagos registrados aparecen en verde (con fecha e importe de pago), mientras que los meses pendientes/adeudos aparecen en rojo mostrando el monto a deber en base al honorario mensual del cliente. Muestra totales del año para control del despacho.
+
+### 10. Integración Opcional de E-Firma y Rutas de Archivos
+* **Asignación Opcional y Atómica**: En `UI/AñadirCliente.java` se añadió soporte para registrar la e-firma de forma opcional durante el registro de un nuevo cliente. La inserción del cliente y de su firma se realiza dentro de una única transacción SQL en `ClientesDAO.insertCliente(cliente, firma)` (garantizando consistencia todo-o-nada).
+* **Gestión Completa de Rutas**: Se expandió el modelo `EFirmas` y la tabla `e_firmas` con campos para almacenar la ruta local del certificado (`ruta_certificado`), llave privada (`ruta_key`) y el archivo `.txt` que contiene la contraseña (`contrasena`).
+* **Diálogos Actualizados**: Los formularios de inserción (`AñadirCliente`) y edición (`EditarFirmaDialog`) incorporan campos de ruta y botones `"Examinar..."` enlazados a un `JFileChooser` para seleccionar los archivos correspondientes en disco de forma interactiva.
+
+### 11. Migración Arquitectónica de SQLite a MySQL
+* **Base de Datos Centralizada**: Se migró la persistencia relacional a MySQL para soportar conexiones concurrentes del despacho a través de red.
+* **Traducción del Esquema**: El script `data/despacho_mysql.sql` define el esquema en MySQL, usando tipos `VARCHAR` de longitud definida en campos únicos indexados (evitando errores de tamaño de índice en MySQL) e `INT AUTO_INCREMENT` para IDs.
+* **Indexación Avanzada**: Se crearon índices explícitos en llaves foráneas (`idx_clientes_contador`, `idx_efirmas_cliente`, `idx_pagos_cliente`, etc.) para optimizar las consultas rápidas.
+* **Dynamic Config Loader (`ConfigLoader.java`)**: Se desacopló la configuración JDBC. La aplicación lee las variables `DB_URI`, `DB_USER` y `DB_PASSWORD` directamente desde un archivo `.env` en la raíz del proyecto utilizando `Properties` nativo de Java.
+
+### 12. Consultas On-Demand, Asincronía con SwingWorker y Limpieza
+* **Eliminación Absoluta de la Caché Local**: Se eliminaron los mapas estáticos locales del `Controlador` para clientes, terceros, firmas y declaraciones. Toda consulta se hace en caliente contra MySQL.
+* **Carga Asíncrona (`SwingWorker`)**: Se refactorizaron las llamadas críticas en la interfaz gráfica (`Index.java`, `BuscarPersonas.java`, `VerListasContadores.java`, `DeclaracionesContadores.java`) para ejecutarse en hilos de SwingWorker, evitando el bloqueo del EDT y la inestabilidad de la interfaz de usuario en entornos de red lentos.
+* **Eliminación de Código Deprecated**: Se removieron todas las funciones marcadas con `@deprecated` en los DAOs y Controlador (tales como `getAllFirmas()`, `getAllDeclaraciones()`, etc.) y referencias huérfanas en diálogos, eliminando código basura.
+* **Corrección de Foco y Minimizado en Windows**: Se resolvió un bug de pérdida de foco del SO que minimizaba la aplicación al abrir/cerrar diálogos modales (como en listas o alertas) al asegurar que el método `setEnabled(true)` de la ventana padre se active antes de mostrar diálogos bloqueantes.
+
+---
+
+## 🚫 Reglas Críticas del Sistema
+* **No tocar el archivo `.env`**: El archivo `.env` ubicado en la raíz del proyecto contiene las credenciales de conexión de red para la base de datos de producción (MySQL). Bajo ninguna circunstancia este archivo debe ser alterado, renombrado, eliminado o sobreescrito de manera destructiva por herramientas automáticas, ya que interrumpirá la comunicación de la aplicación con la base de datos central.

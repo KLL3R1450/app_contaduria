@@ -63,6 +63,12 @@ public class BuscarPersonas extends javax.swing.JDialog {
         JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
         searchPanel.add(jLabel1, BorderLayout.NORTH);
         searchPanel.add(campo, BorderLayout.CENTER);
+        
+        JButton btnRefrescar = new JButton("🔄 Refrescar");
+        btnRefrescar.putClientProperty("JButton.buttonType", "roundRect");
+        btnRefrescar.addActionListener(e -> cargarPersonas());
+        searchPanel.add(btnRefrescar, BorderLayout.EAST);
+        
         contentPane.add(searchPanel, BorderLayout.NORTH);
 
         // Table Panel (Center)
@@ -122,51 +128,51 @@ public class BuscarPersonas extends javax.swing.JDialog {
     }
     
     private void cargarPersonas(){
-        boolean nulo = false;
-        
+        setEnabled(false);
         while(dtm.getRowCount() != 0){
             dtm.removeRow(0);
         }
         
-        if("clientes".equals(tipoPersona) || "firmas".equals(tipoPersona)){
-            for(Cliente cliente : c.getAllClientes().values()){  
-                dtm.addRow( 
-                    new Object[]{
-                     cliente.id_persona,cliente.nombre
+        SwingWorker<java.util.List<Object[]>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected java.util.List<Object[]> doInBackground() throws Exception {
+                java.util.List<Object[]> rows = new java.util.ArrayList<>();
+                if("clientes".equals(tipoPersona) || "firmas".equals(tipoPersona)){
+                    for(Cliente cliente : c.getClientesLigeros()){  
+                        rows.add(new Object[]{cliente.id_persona, cliente.nombre});
                     }
-            );
-            
+                }
+                else if("terceros".equals(tipoPersona)){
+                    for(Terceros t : c.getTercerosLigeros()){
+                        rows.add(new Object[]{t.id_persona, t.nombre});
+                    }
+                }
+                else if("tercerosDe".equals(tipoPersona)){
+                    for(Terceros t : c.getTercerosDeCliente(idPersona)){
+                        rows.add(new Object[]{t.id_persona, t.nombre});
+                    }
+                }
+                return rows;
             }
-        }
-        
-        else if("terceros".equals(tipoPersona)){
-            
-            for(Terceros t : c.getTerceros().values()){
-                
-                dtm.addRow( 
-                        
-                    new Object[]{
-                        t.id_persona,t.nombre
-                    });
-                
+
+            @Override
+            protected void done() {
+                try {
+                    java.util.List<Object[]> rows = get();
+                    setEnabled(true);
+                    for(Object[] row : rows){
+                        dtm.addRow(row);
+                    }
+                    if(dtm.getRowCount() == 0 && "tercerosDe".equals(tipoPersona)){
+                        JOptionPane.showMessageDialog(rootPane, "Este cliente no tiene terceros relacionados");
+                    }
+                } catch(Exception ex) {
+                    setEnabled(true);
+                    JOptionPane.showMessageDialog(rootPane, "Error al conectar con la base de datos central:\n" + ex.getMessage(), "Error de Red", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        
-        else if("tercerosDe".equals(tipoPersona)){
-            for(Terceros t : c.getTercerosDeCliente(idPersona)){
-                dtm.addRow(
-                        new Object[]{
-                            t.id_persona,t.nombre
-                        }
-                );
-            }
-        }
-        
-        
-        if(dtm.getRowCount() == 0){
-            JOptionPane.showMessageDialog(rootPane, "Este cliente no tiene terceros relacionados");
-        }
-       
+        };
+        worker.execute();
     }
     
     protected void setIdPersona(int id){
@@ -582,47 +588,28 @@ public class BuscarPersonas extends javax.swing.JDialog {
         int filaModelo = tabla.convertRowIndexToModel(fila);
         Integer id = (Integer) tabla.getModel().getValueAt(filaModelo, 0);
 
-        String rfc = "";
-        String cp = "";
-        java.util.ArrayList<Integer> regIds = null;
-        String nombre = "";
-
+        String[] datos = null;
         if ("clientes".equals(tipoPersona) || "firmas".equals(tipoPersona)) {
-            Cliente cli = c.getClienteById(id);
-            if (cli != null) {
-                rfc = cli.rfc;
-                cp = cli.cp;
-                regIds = cli.idsRegimenes;
-                nombre = cli.nombre;
-            }
+            datos = c.getDatosSatCliente(id);
         } else if ("terceros".equals(tipoPersona) || "tercerosDe".equals(tipoPersona)) {
-            Terceros ter = c.getTerceroById(id);
-            if (ter != null) {
-                rfc = ter.rfc;
-                cp = ter.cp;
-                regIds = ter.idsRegimenes;
-                nombre = ter.nombre;
-            }
+            datos = c.getDatosSatTercero(id);
         }
+
+        if (datos == null) {
+            JOptionPane.showMessageDialog(this, "No se encontraron los datos SAT de la persona seleccionada.");
+            return;
+        }
+
+        String nombre = datos[0];
+        String rfc = datos[1];
+        String cp = datos[2];
+        String regimenes = datos[3];
 
         StringBuilder sb = new StringBuilder();
         sb.append("Nombre/Razón Social: ").append(nombre).append("\n");
         sb.append("RFC: ").append(rfc).append("\n");
         sb.append("CP: ").append(cp).append("\n");
-        sb.append("Régimen(es): ");
-        if (regIds != null && !regIds.isEmpty()) {
-            java.util.ArrayList<String> regNames = new java.util.ArrayList<>();
-            for (Integer rId : regIds) {
-                for (entidades.Regimenes r : c.getRegimenes()) {
-                    if (r.getId() == rId) {
-                        regNames.add(r.regimen);
-                    }
-                }
-            }
-            sb.append(String.join(", ", regNames));
-        } else {
-            sb.append("Sin registrar");
-        }
+        sb.append("Régimen(es): ").append(regimenes != null ? regimenes : "Sin registrar");
 
         try {
             java.awt.datatransfer.StringSelection selection = new java.awt.datatransfer.StringSelection(sb.toString());

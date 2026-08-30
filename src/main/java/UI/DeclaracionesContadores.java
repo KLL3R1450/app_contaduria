@@ -60,6 +60,11 @@ public class DeclaracionesContadores extends JDialog {
         comboAnio.addActionListener(e -> refrescarTabla());
         topPanel.add(comboAnio);
 
+        JButton btnRefrescar = new JButton("🔄 Refrescar");
+        btnRefrescar.putClientProperty("JButton.buttonType", "roundRect");
+        btnRefrescar.addActionListener(e -> refrescarTabla());
+        topPanel.add(btnRefrescar);
+
         add(topPanel, BorderLayout.NORTH);
 
         modelDeclaraciones = new DefaultTableModel(
@@ -100,24 +105,45 @@ public class DeclaracionesContadores extends JDialog {
             int mes = comboMeses.getSelectedIndex() + 1;
             int anio = (Integer) comboAnio.getSelectedItem();
 
-            Declaracion dec = controlador.obtenerOCrearDeclaracion(idCliente, anio, mes);
-            if (dec == null) {
-                JOptionPane.showMessageDialog(this, "No se pudo sincronizar la declaración en la Base de Datos.");
-                return;
-            }
+            cargando = true;
+            setEnabled(false);
+            SwingWorker<String, Void> saveWorker = new SwingWorker<>() {
+                @Override
+                protected String doInBackground() throws Exception {
+                    Declaracion dec = controlador.obtenerOCrearDeclaracion(idCliente, anio, mes);
+                    if (dec == null) {
+                        return "error_create";
+                    }
+                    if (col == 2) {
+                        return controlador.toggleGastos(dec.getIdDeclaracion(), valor);
+                    } else if (col == 3) {
+                        return controlador.toggleIngresos(dec.getIdDeclaracion(), valor);
+                    } else {
+                        return controlador.toggleDeclarado(dec.getIdDeclaracion(), valor);
+                    }
+                }
 
-            String res = "";
-            if (col == 2) {
-                res = controlador.toggleGastos(dec.getIdDeclaracion(), valor);
-            } else if (col == 3) {
-                res = controlador.toggleIngresos(dec.getIdDeclaracion(), valor);
-            } else if (col == 4) {
-                res = controlador.toggleDeclarado(dec.getIdDeclaracion(), valor);
-            }
-
-            if (!"correcto".equals(res)) {
-                JOptionPane.showMessageDialog(this, "Error al guardar el estado: " + res);
-            }
+                @Override
+                protected void done() {
+                    try {
+                        String res = get();
+                        if ("error_create".equals(res)) {
+                            JOptionPane.showMessageDialog(DeclaracionesContadores.this, "No se pudo sincronizar la declaración en la Base de Datos.");
+                            refrescarTabla();
+                        } else if (!"correcto".equals(res)) {
+                            JOptionPane.showMessageDialog(DeclaracionesContadores.this, "Error al guardar el estado: " + res);
+                            refrescarTabla();
+                        }
+                    } catch(Exception ex) {
+                        JOptionPane.showMessageDialog(DeclaracionesContadores.this, "Error de Red al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        refrescarTabla();
+                    } finally {
+                        cargando = false;
+                        setEnabled(true);
+                    }
+                }
+            };
+            saveWorker.execute();
         });
 
         JScrollPane scrollPane = new JScrollPane(tablaDeclaraciones);
@@ -156,35 +182,44 @@ public class DeclaracionesContadores extends JDialog {
         }
 
         Contadores selected = listaContadores.get(idx);
-        clientesActuales = controlador.getClientesByContador(selected.getId());
         int mes = comboMeses.getSelectedIndex() + 1;
         int anio = (Integer) comboAnio.getSelectedItem();
 
-        for (Cliente cli : clientesActuales) {
-            if (cli == null) continue;
-
-            // Buscar si ya existe declaración para este mes/año
-            boolean gastos = false;
-            boolean ingresos = false;
-            boolean declarado = false;
-
-            for (Declaracion d : controlador.declaraciones.values()) {
-                if (d.getIdCliente() == cli.id_persona && d.anio == anio && d.mes == mes) {
-                    gastos = (d.gastos == 1);
-                    ingresos = (d.ingresos == 1);
-                    declarado = (d.declarado == 1);
-                    break;
-                }
+        setEnabled(false);
+        SwingWorker<java.util.List<Object[]>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected java.util.List<Object[]> doInBackground() throws Exception {
+                return controlador.getDeclaracionesMensualesContador(selected.getId(), anio, mes);
             }
 
-            modelDeclaraciones.addRow(new Object[]{
-                    cli.id_persona,
-                    cli.nombre,
-                    gastos,
-                    ingresos,
-                    declarado
-            });
-        }
-        cargando = false;
+            @Override
+            protected void done() {
+                try {
+                    java.util.List<Object[]> filas = get();
+                    for (Object[] fila : filas) {
+                        int idCliente = (Integer) fila[0];
+                        String nombreCliente = (String) fila[1];
+                        Integer idDeclaracion = (Integer) fila[2];
+                        boolean gastos = ((Integer) fila[3] == 1);
+                        boolean ingresos = ((Integer) fila[4] == 1);
+                        boolean declarado = ((Integer) fila[5] == 1);
+
+                        modelDeclaraciones.addRow(new Object[]{
+                                idCliente,
+                                nombreCliente,
+                                gastos,
+                                ingresos,
+                                declarado
+                        });
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(DeclaracionesContadores.this, "Error al obtener declaraciones mensuales:\n" + ex.getMessage(), "Error de Red", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    cargando = false;
+                    setEnabled(true);
+                }
+            }
+        };
+        worker.execute();
     }
 }

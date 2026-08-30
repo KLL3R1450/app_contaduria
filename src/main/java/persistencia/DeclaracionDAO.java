@@ -140,35 +140,6 @@ public class DeclaracionDAO {
         }
     }
     
-    /**
-     * Obtiene todas las declaraciones que tiene la tabla declaraciones_clientes
-     * @return Variable de tipo Map con los ids como clave y declaraciones 
-     * @deprecated
-     */
-    @Deprecated
-    public Map<Integer,Declaracion> getAllDeclaraciones(){
-        String sql = "SELECT * FROM declaraciones_clientes";
-        Map<Integer, Declaracion> decs = new HashMap<>();
-        
-        
-        try(PreparedStatement gAD = conexion.prepareStatement(sql)){
-            ResultSet rs = gAD.executeQuery();
-            
-            while(rs.next()){
-                Declaracion d = new Declaracion(
-                        rs.getInt("id_declaracion"),rs.getInt("id_cliente"),
-                        rs.getInt("anio"),rs.getInt("mes"),rs.getInt("gastos"),
-                        rs.getInt("ingresos"),rs.getInt("declarado")
-                );
-                decs.put(d.getIdDeclaracion(), d);
-            }
-            
-            return decs;
-        }catch(SQLException ex){
-            throw new RuntimeException("Error al obtener las declaraciones: " + ex.getMessage(), ex);
-        }
-        
-    }
     
     public String revertirGastos(int idDeclaracion) {
         String sql = "UPDATE declaraciones_clientes SET gastos = 0 WHERE id_declaracion = ?";
@@ -195,4 +166,103 @@ public class DeclaracionDAO {
         }
     }
     
+    public java.util.List<Declaracion> getDeclaracionesPorCliente(int idCliente) {
+        java.util.List<Declaracion> lista = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM declaraciones_clientes WHERE id_cliente = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idCliente);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    lista.add(new Declaracion(
+                        rs.getInt("id_declaracion"),
+                        rs.getInt("id_cliente"),
+                        rs.getInt("anio"),
+                        rs.getInt("mes"),
+                        rs.getInt("gastos"),
+                        rs.getInt("ingresos"),
+                        rs.getInt("declarado")
+                    ));
+                }
+            }
+        }catch(SQLException ex){
+            throw new RuntimeException("Error al obtener declaraciones de cliente: " + ex.getMessage(), ex);
+        }
+        return lista;
+    }
+
+    public Declaracion getDeclaracionPorId(int idDeclaracion) {
+        String sql = "SELECT * FROM declaraciones_clientes WHERE id_declaracion = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idDeclaracion);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    return new Declaracion(
+                        rs.getInt("id_declaracion"),
+                        rs.getInt("id_cliente"),
+                        rs.getInt("anio"),
+                        rs.getInt("mes"),
+                        rs.getInt("gastos"),
+                        rs.getInt("ingresos"),
+                        rs.getInt("declarado")
+                    );
+                }
+            }
+        }catch(SQLException ex){
+            throw new RuntimeException("Error al obtener declaracion por ID: " + ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    public Declaracion getDeclaracionPeriodo(int idCliente, int anio, int mes) {
+        String sql = "SELECT * FROM declaraciones_clientes WHERE id_cliente = ? AND anio = ? AND mes = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idCliente);
+            ps.setInt(2, anio);
+            ps.setInt(3, mes);
+            try(ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    return new Declaracion(
+                        rs.getInt("id_declaracion"),
+                        rs.getInt("id_cliente"),
+                        rs.getInt("anio"),
+                        rs.getInt("mes"),
+                        rs.getInt("gastos"),
+                        rs.getInt("ingresos"),
+                        rs.getInt("declarado")
+                    );
+                }
+            }
+        }catch(SQLException ex){
+            throw new RuntimeException("Error al obtener declaracion por periodo: " + ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    public java.util.List<Object[]> getDeclaracionesMensualesContador(int idContador, int anio, int mes) {
+        java.util.List<Object[]> res = new java.util.ArrayList<>();
+        String sql = "SELECT c.id_cliente, c.nombre_cliente, d.id_declaracion, d.gastos, d.ingresos, d.declarado " +
+                     "FROM clientes c " +
+                     "LEFT JOIN declaraciones_clientes d ON c.id_cliente = d.id_cliente AND d.anio = ? AND d.mes = ? " +
+                     "WHERE c.id_contador = ? AND c.id_estado = 1";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, anio);
+            ps.setInt(2, mes);
+            ps.setInt(3, idContador);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    res.add(new Object[]{
+                        rs.getInt("id_cliente"),
+                        rs.getString("nombre_cliente"),
+                        rs.getObject("id_declaracion") != null ? rs.getInt("id_declaracion") : null,
+                        rs.getInt("gastos"),
+                        rs.getInt("ingresos"),
+                        rs.getInt("declarado")
+                    });
+                }
+            }
+        }catch(SQLException ex){
+            throw new RuntimeException("Error al obtener declaraciones mensuales del contador: " + ex.getMessage(), ex);
+        }
+        return res;
+    }
 }

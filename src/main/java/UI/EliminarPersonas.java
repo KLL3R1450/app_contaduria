@@ -57,7 +57,7 @@ public class EliminarPersonas extends javax.swing.JDialog {
     
     private void setListaPersonas(){
         if("clientes".equals(tipoPersona)){
-            for(Cliente cli : c.getAllClientes().values()){
+            for(Cliente cli : c.getClientesLigeros()){
                 all.add(cli);
                 añadidos.add(cli);
 
@@ -66,7 +66,7 @@ public class EliminarPersonas extends javax.swing.JDialog {
         }
         
         else if("terceros".equals(tipoPersona)){
-            for(Terceros t : c.getTerceros().values()){
+            for(Terceros t : c.getTercerosLigeros()){
                 all.add(t);
                 añadidos.add(t);
                 

@@ -19,6 +19,7 @@ public class VerListasContadores extends JDialog {
     private JTable tablaClientes;
     private DefaultTableModel modelClientes;
     private ArrayList<Contadores> listaContadores;
+    private boolean cargando = false;
 
     public VerListasContadores(Frame parent, boolean modal, Controlador controlador) {
         super(parent, modal);
@@ -54,6 +55,11 @@ public class VerListasContadores extends JDialog {
         });
         topPanel.add(txtFiltrarCliente);
 
+        JButton btnRefrescar = new JButton("🔄 Refrescar");
+        btnRefrescar.putClientProperty("JButton.buttonType", "roundRect");
+        btnRefrescar.addActionListener(e -> cargarClientesContador());
+        topPanel.add(btnRefrescar);
+
         add(topPanel, BorderLayout.NORTH);
 
         modelClientes = new DefaultTableModel(new Object[][]{}, new String[]{"ID Cliente", "Nombre", "RFC", "Honorarios"}) {
@@ -83,6 +89,7 @@ public class VerListasContadores extends JDialog {
     }
 
     private void cargarContadores() {
+        cargando = true;
         listaContadores = new ArrayList<>(controlador.getAllContadores().values());
         comboContadores.removeAllItems();
         for (Contadores c : listaContadores) {
@@ -90,26 +97,49 @@ public class VerListasContadores extends JDialog {
         }
         if (!listaContadores.isEmpty()) {
             comboContadores.setSelectedIndex(0);
-            cargarClientesContador();
         }
+        cargando = false;
+        cargarClientesContador();
     }
 
     private void cargarClientesContador() {
-        modelClientes.setRowCount(0);
+        if (cargando) return;
         int idx = comboContadores.getSelectedIndex();
-        if (idx == -1) return;
+        if (idx == -1) {
+            modelClientes.setRowCount(0);
+            return;
+        }
 
         Contadores selected = listaContadores.get(idx);
-        ArrayList<Cliente> clientes = controlador.getClientesByContador(selected.getId());
         String filtro = txtFiltrarCliente.getText().trim().toLowerCase();
 
-        for (Cliente cli : clientes) {
-            if (cli != null) {
-                if (filtro.isEmpty() || cli.nombre.toLowerCase().contains(filtro)) {
-                    modelClientes.addRow(new Object[]{cli.id_persona, cli.nombre, cli.rfc, cli.honorarios});
+        setEnabled(false);
+        SwingWorker<ArrayList<Cliente>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected ArrayList<Cliente> doInBackground() throws Exception {
+                return controlador.getClientesByContador(selected.getId());
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ArrayList<Cliente> clientes = get();
+                    modelClientes.setRowCount(0); // Limpiar justo antes de agregar en el EDT
+                    for (Cliente cli : clientes) {
+                        if (cli != null) {
+                            if (filtro.isEmpty() || cli.nombre.toLowerCase().contains(filtro)) {
+                                modelClientes.addRow(new Object[]{cli.id_persona, cli.nombre, cli.rfc, cli.honorarios});
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(VerListasContadores.this, "Error al obtener clientes del contador:\n" + ex.getMessage(), "Error de Red", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    setEnabled(true);
                 }
             }
-        }
+        };
+        worker.execute();
     }
 
     private void abrirHistorialDeclaraciones() {
@@ -121,53 +151,102 @@ public class VerListasContadores extends JDialog {
 
         int modelRow = tablaClientes.convertRowIndexToModel(selectedRow);
         int idCliente = (Integer) modelClientes.getValueAt(modelRow, 0);
-        Cliente cliente = controlador.getClienteById(idCliente);
 
-        if (cliente == null) return;
-
-        JDialog diag = new JDialog(this, "Historial de Declaraciones - " + cliente.nombre, true);
-        diag.setMinimumSize(new Dimension(600, 400));
-        diag.setLayout(new BorderLayout(10, 10));
-
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        filterPanel.add(new JLabel("Filtrar Mes:"));
-        JComboBox<String> comboMes = new JComboBox<>(new String[]{
-                "Todos", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-        });
-        filterPanel.add(comboMes);
-        diag.add(filterPanel, BorderLayout.NORTH);
-
-        DefaultTableModel modelDec = new DefaultTableModel(new Object[][]{}, new String[]{"Año", "Mes", "Gastos", "Ingresos", "Declarado"}) {
+        setEnabled(false);
+        SwingWorker<Cliente, Void> workerCli = new SwingWorker<>() {
             @Override
-            public boolean isCellEditable(int r, int c) { return false; }
-        };
-        JTable tableDec = new JTable(modelDec);
-        diag.add(new JScrollPane(tableDec), BorderLayout.CENTER);
+            protected Cliente doInBackground() throws Exception {
+                return controlador.getClienteById(idCliente);
+            }
 
-        Runnable cargarTabla = () -> {
-            modelDec.setRowCount(0);
-            int selectedMonthIdx = comboMes.getSelectedIndex();
-            for (Declaracion dec : controlador.declaraciones.values()) {
-                if (dec.getIdCliente() == idCliente) {
-                    if (selectedMonthIdx == 0 || dec.mes == selectedMonthIdx) {
-                        modelDec.addRow(new Object[]{
-                                dec.anio,
-                                obtenerNombreMes(dec.mes),
-                                dec.gastos == 1 ? "✓ Completado" : "❌ Pendiente",
-                                dec.ingresos == 1 ? "✓ Completado" : "❌ Pendiente",
-                                dec.declarado == 1 ? "✓ Presentada" : "❌ No Presentada"
-                        });
+            @Override
+            protected void done() {
+                try {
+                    Cliente cliente = get();
+                    setEnabled(true);
+                    if (cliente == null) {
+                        return;
                     }
+
+                    JDialog diag = new JDialog(VerListasContadores.this, "Historial de Declaraciones - " + cliente.nombre, true);
+                    diag.setMinimumSize(new Dimension(600, 400));
+                    diag.setLayout(new BorderLayout(10, 10));
+
+                    JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+                    filterPanel.add(new JLabel("Filtrar Mes:"));
+                    JComboBox<String> comboMes = new JComboBox<>(new String[]{
+                            "Todos", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                    });
+                    filterPanel.add(comboMes);
+
+                    filterPanel.add(new JLabel("Filtrar Año:"));
+                    JComboBox<String> comboAnio = new JComboBox<>(new String[]{
+                            "Todos", "2024", "2025", "2026", "2027", "2028"
+                    });
+                    filterPanel.add(comboAnio);
+
+                    diag.add(filterPanel, BorderLayout.NORTH);
+
+                    DefaultTableModel modelDec = new DefaultTableModel(new Object[][]{}, new String[]{"Año", "Mes", "Gastos", "Ingresos", "Declarado"}) {
+                        @Override
+                        public boolean isCellEditable(int r, int c) { return false; }
+                    };
+                    JTable tableDec = new JTable(modelDec);
+                    diag.add(new JScrollPane(tableDec), BorderLayout.CENTER);
+
+                    Runnable cargarTabla = () -> {
+                        modelDec.setRowCount(0);
+                        int selectedMonthIdx = comboMes.getSelectedIndex();
+                        int selectedYearIdx = comboAnio.getSelectedIndex();
+                        
+                        diag.setEnabled(false);
+                        SwingWorker<java.util.List<Declaracion>, Void> workerDec = new SwingWorker<>() {
+                            @Override
+                            protected java.util.List<Declaracion> doInBackground() throws Exception {
+                                return controlador.getDeclaracionesPorCliente(idCliente);
+                            }
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    java.util.List<Declaracion> decs = get();
+                                    for (Declaracion dec : decs) {
+                                        boolean matchesMonth = (selectedMonthIdx == 0 || dec.mes == selectedMonthIdx);
+                                        boolean matchesYear = (selectedYearIdx == 0 || dec.anio == Integer.parseInt((String) comboAnio.getSelectedItem()));
+                                        if (matchesMonth && matchesYear) {
+                                            modelDec.addRow(new Object[]{
+                                                    dec.anio,
+                                                    obtenerNombreMes(dec.mes),
+                                                    dec.gastos == 1 ? "✓ Completado" : "❌ Pendiente",
+                                                    dec.ingresos == 1 ? "✓ Completado" : "❌ Pendiente",
+                                                    dec.declarado == 1 ? "✓ Presentada" : "❌ No Presentada"
+                                            });
+                                        }
+                                    }
+                                } catch (Exception ex) {
+                                    JOptionPane.showMessageDialog(diag, "Error al cargar declaraciones:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                                } finally {
+                                    diag.setEnabled(true);
+                                }
+                            }
+                        };
+                        workerDec.execute();
+                    };
+
+                    comboMes.addActionListener(e -> cargarTabla.run());
+                    comboAnio.addActionListener(e -> cargarTabla.run());
+                    cargarTabla.run();
+
+                    diag.setLocationRelativeTo(VerListasContadores.this);
+                    diag.setVisible(true);
+                } catch (Exception ex) {
+                    setEnabled(true);
+                    JOptionPane.showMessageDialog(VerListasContadores.this, "Error al obtener cliente:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
-
-        comboMes.addActionListener(e -> cargarTabla.run());
-        cargarTabla.run();
-
-        diag.setLocationRelativeTo(this);
-        diag.setVisible(true);
+        workerCli.execute();
     }
 
     private String obtenerNombreMes(int m) {
