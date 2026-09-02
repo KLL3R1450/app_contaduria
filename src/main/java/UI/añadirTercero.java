@@ -98,7 +98,7 @@ public class añadirTercero extends javax.swing.JDialog {
             modeloRegimenesD.addElement(o.regimen);
         }
         
-        for(Cliente cli : c.getAllClientes().values()){
+        for(Cliente cli : c.getClientesLigeros()){
             allClientes.add(cli);
             modeloClientesD.addElement(cli.nombre);
         }

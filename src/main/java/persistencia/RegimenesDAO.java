@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package persistencia;
 
 import entidades.Regimenes;
@@ -10,33 +6,30 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
 
 /**
- *
- * @author Osmar
+ * @author Osmar & Antigravity
  */
 public class RegimenesDAO {
-    //Conexion con la base de datos
-    private static final Connection conexion = ConectorBD.getConexion();
     
     /**
      * Obtiene todos los regimenes que se tienen en la base de datos
      * @return Un ArrayList con todos los registros
      */
-    public  ArrayList<Regimenes> getRegimenes(){
+    public ArrayList<Regimenes> getRegimenes() {
         ArrayList<Regimenes> regimenes = new ArrayList<>();
         String sql = "SELECT * FROM regimenes";
-        try(PreparedStatement gr = conexion.prepareStatement(sql)){
-            ResultSet getR = gr.executeQuery();
+        try (Connection conexion = ConectorBD.getConexion();
+             PreparedStatement gr = conexion.prepareStatement(sql);
+             ResultSet getR = gr.executeQuery()) {
             
-            while(getR.next()){
+            while (getR.next()) {
                 regimenes.add(
                         new Regimenes(getR.getInt("id_regimen"),
                                 getR.getString("des_regimen")));
             }
             
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             throw new RuntimeException("Error al obtener regimenes: " + ex.getMessage(), ex);
         }
         
@@ -45,20 +38,18 @@ public class RegimenesDAO {
     
     /**
      * Funcion que añade un regimen a la base de datos
-     * @param r Variable de tipo String con el nombre del nuevo regimen
-     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
-     * "correcto"
+     * @param r Variable de tipo Regimenes con los datos del nuevo regimen
+     * @return "correcto" o mensaje de error
      */
-    public String addRegimen(Regimenes r){
+    public String addRegimen(Regimenes r) {
         String sql = "INSERT INTO regimenes(des_regimen) values (?)";
         
-        try(PreparedStatement ar = conexion.prepareStatement(sql)){
+        try (Connection conexion = ConectorBD.getConexion();
+             PreparedStatement ar = conexion.prepareStatement(sql)) {
             ar.setString(1, r.regimen);
-            
             ar.execute();
-            
             return "correcto";
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             return "Error al insertar el nuevo regimen: " + ex.getMessage();
         }
     }
@@ -66,21 +57,17 @@ public class RegimenesDAO {
     /**
      * Funcion que elimina un regimen de la base de datos
      * @param idRegimen Variable de tipo int con el id del regimen a eliminar
-     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
-     * "correcto"
+     * @return "correcto" o mensaje de error
      */
-    public String deleteRegimen(int idRegimen){
+    public String deleteRegimen(int idRegimen) {
         String sql = "DELETE FROM regimenes WHERE id_regimen = ?";
         
-        try(PreparedStatement dr = conexion.prepareStatement(sql)){
-            
+        try (Connection conexion = ConectorBD.getConexion();
+             PreparedStatement dr = conexion.prepareStatement(sql)) {
             dr.setInt(1, idRegimen);
-            
             dr.execute();
-            
             return "correcto";
-            
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             return "Error al eliminar el regimen: " + ex.getMessage();
         }
     }

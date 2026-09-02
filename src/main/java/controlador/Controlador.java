@@ -30,25 +30,15 @@ public class Controlador implements IControler{
     private persistencia.PagosDAO dBPagos;
     
     public Map<Integer,Contadores> contadores;
-    public Map<Integer,Cliente> clientes;
-    public Map<Integer,Declaracion> declaraciones;
-    public Map<Integer,EFirmas> eFirmas;
     public ArrayList<Regimenes> regimenes;
-    public Map<Integer,Terceros> terceros;
     
     private static Controlador controlador = null;
     
     @Override
     public void cargarTodo() {
         try {
-            contadores = dBContadores.getContadores();
-            clientes = dBClientes.getClientes();
             regimenes = dBRegimenes.getRegimenes();
-            eFirmas = dBFirmas.getAllFirmas();
-            declaraciones = dBDeclaraciones.getAllDeclaraciones();
-            terceros =  dBTerceros.getTerceros();
-            
-            JOptionPane.showMessageDialog(null, "Datos Extraidos con exito puedes empezar el dia");
+            contadores = dBContadores.getContadores();
         } catch (RuntimeException ex) {
             JOptionPane.showMessageDialog(null, "Fallo critico al cargar los datos de la base de datos:\n" + ex.getMessage(), "Error de Inicializacion", JOptionPane.ERROR_MESSAGE);
         }
@@ -63,11 +53,7 @@ public class Controlador implements IControler{
         dBFirmas = new EFirmasDAO();
         dBPagos = new persistencia.PagosDAO();
         contadores = new HashMap<>();
-        clientes  = new HashMap<>();
-        declaraciones = new HashMap<>();
-        eFirmas =  new HashMap<>();
         regimenes = new ArrayList<>();
-        terceros = new HashMap<>();
     }
     
     public static Controlador getControlador(){
@@ -82,19 +68,15 @@ public class Controlador implements IControler{
     
     
     public ArrayList<Cliente> getClientesByContador(int idContador){
-        ArrayList<Cliente> clients = new ArrayList();
-        
-        Contadores contador = contadores.get(idContador);
-        
-        for(Integer i : contador.idsClientes){
-             clients.add(clientes.get(i));
-        }
-        
-        return clients;
+        return dBClientes.getClientesDeContadorObj(idContador);
     }
     
+    public String insertContador(String nombre){
+        Contadores c = new Contadores(nombre, "SIN CONTACTO");
+        return insertContador(c);
+    }
+
     public String insertContador(Contadores contador){
-        
         String respuesta = dBContadores.insertContador(contador);
         
         if("correcto".equals(respuesta)){
@@ -111,19 +93,47 @@ public class Controlador implements IControler{
                 
         return respuesta;
     }
-    
-    public String updateContactoConta(String contacto, int idContador){
-        String respuesta = dBContadores.updateContactoContador(contacto, idContador);
+
+    public String updateNombreContador(int idContador, String nombre){
+        String respuesta = dBContadores.updateNombreContador(idContador, nombre);
         
         if("correcto".equals(respuesta)){
-            contadores.get(idContador).contacto = contacto;
+            if (contadores.containsKey(idContador)) {
+                contadores.get(idContador).nombre = nombre;
+            }
         }
         
         return respuesta;
     }
     
-    public Map<Integer,Cliente> getAllClientes(){
-        return clientes;
+    public String updateContactoConta(String contacto, int idContador){
+        String respuesta = dBContadores.updateContactoContador(contacto, idContador);
+        
+        if("correcto".equals(respuesta)){
+            if (contadores.containsKey(idContador)) {
+                contadores.get(idContador).contacto = contacto;
+            }
+        }
+        
+        return respuesta;
+    }
+
+    public ArrayList<Cliente> getClientesSinContador(){
+        return dBClientes.getClientesSinContador();
+    }
+
+    public String asignarClienteAContador(int idCliente, int idContador){
+        return dBClientes.asignarContador(idCliente, idContador);
+    }
+
+    public String desasignarCliente(int idCliente){
+        return dBClientes.desasignarContador(idCliente);
+    }
+    
+
+
+    public java.util.List<Cliente> getClientesLigeros() {
+        return dBClientes.getClientesLigeros();
     }
         
     public String insertCliente(Cliente cliente) {
@@ -132,108 +142,57 @@ public class Controlador implements IControler{
 
     public String insertCliente(Cliente cliente, EFirmas firma){
         String respuesta =  dBClientes.insertCliente(cliente, firma);
-        
-        if("correcto".equals(respuesta)){
-            clientes.put(cliente.id_persona, cliente);
-            if (firma != null) {
-                eFirmas.put(cliente.id_persona, firma);
-            }
-        }
-        
         return respuesta;
     }
 
     public String deleteCliente(int idCliente){
         String respuesta = dBClientes.deleteCliente(idCliente);
-        
-        if("correcto".equals(respuesta)) clientes.remove(idCliente);
-        
         return respuesta;
     }
     
     public String addRegimenACliente(int idCliente, int idRegimen){
         String respuesta = dBClientes.agregarRegimenCliente(idCliente, idRegimen);
-        
-        if("correcto".equals(respuesta)){
-            
-           clientes.get(idCliente).idsRegimenes.add((Integer)idRegimen); 
-        }
-        
         return respuesta;
     }
     
     public String deleteRegimenACliente(int idCliente,  int idRegimen){
         String respuesta = dBClientes.deleteRegimenCliente(idCliente, idRegimen);
-        
-        if("correcto".equals(respuesta)) {
-            
-           clientes.get(idCliente).idsRegimenes.remove((Integer) idRegimen); 
-        }
-            
+     
         return respuesta;
     }
     
-    public Map<Integer, Terceros> getTerceros(){
-        return terceros;
+
+    public java.util.List<Terceros> getTercerosLigeros() {
+        return dBTerceros.getTercerosLigeros();
     }
     
     public String insertTercero(Terceros t, ArrayList<Integer> clientesT){
         String respuesta = dBTerceros.insertTercero(t, clientesT);
-        
-        if("correcto".equals(respuesta)){
-            terceros.put(t.id_persona, t);
-        }
-        
         return respuesta;
     }
     
     public String relacionarClientes(int idTercero, ArrayList<Integer> clientesT){
         String respuesta = dBTerceros.relacionarClientes(idTercero, clientesT);
-        
         return respuesta;
     }
     
     public String borrarTercero(int idTercero){
         String respuesta = dBTerceros.borrarTercero(idTercero);
-        
-        if("correcto".equals(respuesta)){
-            
-            terceros.remove(idTercero);
-        }
-        
         return respuesta;
     }
     
     public String borrarRegimenTerero(int idTercero, int idRegimen){
         String respuesta = dBTerceros.eliminarRegimenTercero(idTercero, idRegimen);
-        
-        if("correcto".equals(respuesta)){
-            terceros.get(idTercero).idsRegimenes.remove((Integer) idRegimen);
-        }
-        
         return respuesta;
     }
     
     public String agregarRegimenTercerro(int idTercero, int idRegimen){
         String respuesta = dBTerceros.insertarRegimenTerero(idTercero, idRegimen);
-        
-        if("correcto".equals(respuesta)){
-            terceros.get(idTercero).idsRegimenes.add((Integer) idRegimen);
-        }
-        
-        
         return respuesta;
     }
     
     public ArrayList<Terceros> getTercerosDeCliente(int idCliente){
-        ArrayList<Integer> idTerceros = dBClientes.getTercerosCliente(idCliente);
-        ArrayList<Terceros> terce = new ArrayList<>();
-        
-        if(idTerceros.isEmpty()) return terce;
-        
-        for(Integer i : idTerceros) terce.add(terceros.get(i));
-        
-        return terce;
+        return dBTerceros.getTercerosDeClienteObj(idCliente);
     }
     
     public ArrayList<Regimenes> getRegimenes(){
@@ -242,37 +201,25 @@ public class Controlador implements IControler{
     
     public String addRegimen(Regimenes r){
         String respuesta = dBRegimenes.addRegimen(r);
-        
         if("correcto".equals(respuesta)) regimenes.add(r);
-        
         return respuesta;
     }
     
     public String deleteRegimen(Regimenes r){
         String respuesta = dBRegimenes.deleteRegimen(r.getId());
-        
         if("correcto".equals(respuesta)){
-            
             for(int i = 0; i < regimenes.size(); i++){
-                
                 if(r.getId() == regimenes.get(i).getId()){
-                    
                     regimenes.remove(i);
                     break;
-                    
                 }
             }
         }
-        
         return respuesta;
-    }
-        
-    public Map<Integer, EFirmas> getAllFirmas(){
-        return eFirmas;
     }
     
     public String renovarFirma(String fechaE, String fechaR, int idCliente){
-        EFirmas existing = eFirmas.get(idCliente);
+        EFirmas existing = getFirmaDe(idCliente);
         String rCert = (existing != null) ? existing.ruta_certificado : null;
         String rKey = (existing != null) ? existing.ruta_key : null;
         String pass = (existing != null) ? existing.contrasena : null;
@@ -281,159 +228,82 @@ public class Controlador implements IControler{
 
     public String renovarFirma(String fechaE, String fechaR, String rCert, String rKey, String pass, int idCliente){
         String respuesta = dBFirmas.renovacion(fechaE, fechaR, rCert, rKey, pass, idCliente);
-        
-        if("correcto".equals(respuesta)){
-            EFirmas ef = eFirmas.get(idCliente);
-            if (ef != null) {
-                ef.fecha_expiracion = fechaE;
-                ef.fecha_renovacion = fechaR;
-                ef.ruta_certificado = rCert;
-                ef.ruta_key = rKey;
-                ef.contrasena = pass;
-            } else {
-                eFirmas.put(idCliente, new EFirmas(fechaE, fechaR, idCliente, rCert, rKey, pass));
-            }
-        }
-        
         return respuesta;
     }
     
     public EFirmas getFirmaDe(int idCliente){
-        return(eFirmas.containsKey(idCliente)) ? eFirmas.get(idCliente) : null;
+        return dBFirmas.getFirmaDe(idCliente);
     }
     
     public String insertarDeclaracion(int id_cliente, int anio, int mes){
         String respuesta = dBDeclaraciones.insertDeclaracion(id_cliente, anio, mes);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones = dBDeclaraciones.getAllDeclaraciones();
-        }
-        
         return respuesta;
     }
     
     public String colocarGastosDeclaracion(int id_declaracion){
         String respuesta = dBDeclaraciones.colocarGastos(id_declaracion);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones.get(id_declaracion).gastos = 1;
-        }
-        
         return respuesta;
     }
     
     public String colocarIngresosDeclaracion(int id_declaracion){
         String respuesta = dBDeclaraciones.colocarIngresos(id_declaracion);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones.get(id_declaracion).ingresos = 1;
-        }
-        
         return respuesta;
     }
     
     public String colocarIngresosYGastosDeclaracion(int id_declaracion){
         String respuesta = dBDeclaraciones.colocarIngresosGastos(id_declaracion);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones.get(id_declaracion).ingresos = 1;
-            declaraciones.get(id_declaracion).gastos = 1;
-        }
-        
         return respuesta;
     }
     
     public String setDeclarado(int id_declaracion){
         String respuesta = dBDeclaraciones.setDeclarado(id_declaracion);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones.get(id_declaracion).declarado = 1;
-        }
-        
         return respuesta;
     }
     
     public String desDeclarar(int id_declaracion){
         String respuesta = dBDeclaraciones.desDeclarar(id_declaracion);
-        
-        if("correcto".equals(respuesta)){
-            declaraciones.get(id_declaracion).declarado = 0;
-        }
-        
         return respuesta;
     }
     
-    
     public Cliente getClienteById(int id){
-        return clientes.get(id);
+        return dBClientes.getClienteById(id);
     }
     
     public Terceros getTerceroById(int id){
-        return terceros.get(id);
+        return dBTerceros.getTerceroById(id);
     }
-    
     
     public String updateCliente(Cliente c){
         String respuesta = dBClientes.updateCliente(c, c.id_persona);
-        
-        if("correcto".equals(respuesta)) clientes.put(c.id_persona, c);
-        
-        
         return respuesta;  
     }
     
     public String updateTercero(Terceros t){
         String respuesta = dBTerceros.updateTercero(t);
-        
-        if("correcto".equals(respuesta)){
-            terceros = dBTerceros.getTerceros();
-        }
-        
         return respuesta;
     }
 
     public Declaracion obtenerOCrearDeclaracion(int idCliente, int anio, int mes) {
-        for (Declaracion d : declaraciones.values()) {
-            if (d.getIdCliente() == idCliente && d.anio == anio && d.mes == mes) {
-                return d;
+        Declaracion d = dBDeclaraciones.getDeclaracionPeriodo(idCliente, anio, mes);
+        if (d == null) {
+            String res = insertarDeclaracion(idCliente, anio, mes);
+            if ("correcto".equals(res)) {
+                d = dBDeclaraciones.getDeclaracionPeriodo(idCliente, anio, mes);
             }
         }
-        String res = insertarDeclaracion(idCliente, anio, mes);
-        if ("correcto".equals(res)) {
-            for (Declaracion d : declaraciones.values()) {
-                if (d.getIdCliente() == idCliente && d.anio == anio && d.mes == mes) {
-                    return d;
-                }
-            }
-        }
-        return null;
+        return d;
     }
 
     public String toggleGastos(int idDeclaracion, boolean check) {
-        String sql = check ? dBDeclaraciones.colocarGastos(idDeclaracion) : dBDeclaraciones.revertirGastos(idDeclaracion);
-        if ("correcto".equals(sql)) {
-            declaraciones.get(idDeclaracion).gastos = check ? 1 : 0;
-            return "correcto";
-        }
-        return sql;
+        return check ? dBDeclaraciones.colocarGastos(idDeclaracion) : dBDeclaraciones.revertirGastos(idDeclaracion);
     }
 
     public String toggleIngresos(int idDeclaracion, boolean check) {
-        String sql = check ? dBDeclaraciones.colocarIngresos(idDeclaracion) : dBDeclaraciones.revertirIngresos(idDeclaracion);
-        if ("correcto".equals(sql)) {
-            declaraciones.get(idDeclaracion).ingresos = check ? 1 : 0;
-            return "correcto";
-        }
-        return sql;
+        return check ? dBDeclaraciones.colocarIngresos(idDeclaracion) : dBDeclaraciones.revertirIngresos(idDeclaracion);
     }
 
     public String toggleDeclarado(int idDeclaracion, boolean check) {
-        String sql = check ? setDeclarado(idDeclaracion) : desDeclarar(idDeclaracion);
-        if ("correcto".equals(sql)) {
-            declaraciones.get(idDeclaracion).declarado = check ? 1 : 0;
-            return "correcto";
-        }
-        return sql;
+        return check ? setDeclarado(idDeclaracion) : desDeclarar(idDeclaracion);
     }
 
     public List<Pago> obtenerPagosPorCliente(int idCliente) {
@@ -442,5 +312,25 @@ public class Controlador implements IControler{
 
     public String registrarPago(Pago pago) {
         return dBPagos.insertarPago(pago);
+    }
+
+    public java.util.List<Object[]> getDeclaracionesMensualesContador(int idContador, int anio, int mes) {
+        return dBDeclaraciones.getDeclaracionesMensualesContador(idContador, anio, mes);
+    }
+
+    public java.util.List<Declaracion> getDeclaracionesPorCliente(int idCliente) {
+        return dBDeclaraciones.getDeclaracionesPorCliente(idCliente);
+    }
+
+    public String[] getDatosSatCliente(int id) {
+        return dBClientes.getDatosSatCliente(id);
+    }
+
+    public String[] getDatosSatTercero(int id) {
+        return dBTerceros.getDatosSatTercero(id);
+    }
+
+    public java.util.List<Object[]> obtenerSemaforoDashboard() {
+        return dBFirmas.obtenerSemaforoDashboard();
     }
 }

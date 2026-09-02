@@ -87,7 +87,11 @@ public class DetallesClientes extends javax.swing.JDialog {
             }
         }
         
-        ComboContadores.setSelectedItem( c.getAllContadores().get(cliente.id_contador ).nombre);
+        if (cliente.id_contador > 0 && c.getAllContadores().containsKey(cliente.id_contador)) {
+            ComboContadores.setSelectedItem(c.getAllContadores().get(cliente.id_contador).nombre);
+        } else {
+            ComboContadores.setSelectedIndex(0);
+        }
     }
     
     private void setUnEditable(){

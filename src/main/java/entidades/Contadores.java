@@ -14,7 +14,6 @@ public class Contadores {
     private int id_contador;
     public String nombre;
     public String contacto;
-    public ArrayList<Integer> idsClientes;
 
     public Contadores( String nombre, String contacto) {
         this.nombre = nombre;
