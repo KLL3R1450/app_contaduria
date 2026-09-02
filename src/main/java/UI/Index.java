@@ -91,6 +91,11 @@ public class Index extends javax.swing.JFrame {
         sidebar.add(btnFirmas);
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
+        JButton btnContadores = crearBotonSidebar(" Contadores");
+        btnContadores.addActionListener(e -> abrirGestionContadores());
+        sidebar.add(btnContadores);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+
         JButton btnListasContadores = crearBotonSidebar(" Listas Contadores");
         btnListasContadores.addActionListener(e -> abrirListasContadores());
         sidebar.add(btnListasContadores);
@@ -393,6 +398,12 @@ public class Index extends javax.swing.JFrame {
     private void abrirEliminarPersonas() {
         EliminarPersonas ec = new EliminarPersonas(this, rootPaneCheckingEnabled, c, "clientes");
         ec.setVisible(true);
+        cargarDatosDashboard(); // refrescar
+    }
+
+    private void abrirGestionContadores() {
+        GestionContadores gc = new GestionContadores(this, rootPaneCheckingEnabled, c);
+        gc.setVisible(true);
         cargarDatosDashboard(); // refrescar
     }
 

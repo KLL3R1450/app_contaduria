@@ -83,22 +83,64 @@ public class ContadoresDAO {
         }
     }
     
+    public String insertContador(String nombre) {
+        Contadores c = new Contadores(nombre, "SIN CONTACTO");
+        return insertContador(c);
+    }
+
     /**
-     * Funcion que "Elimina" un registro en la tabla contadores
+     * Funcion que "Elimina" (da de baja) un registro en la tabla contadores
+     * y libera transaccionalmente a todos sus clientes asociados dejándolos sin contador.
      * @param id_contador Variable de tipo int que contiene el id del contador a eliminar
-     * @return "El status devuelto por el gestor de base de datos. En caso de ser correcto solo regresa
-     * "correcto"
+     * @return "correcto" o mensaje de error
      */
     public String deleteContador(int id_contador){
-        String sql = "UPDATE contadores SET id_estado = 2 WHERE id_contador = ?";
+        String sqlRelease = "UPDATE clientes SET id_contador = NULL WHERE id_contador = ?";
+        String sqlDelete = "UPDATE contadores SET id_estado = 2 WHERE id_contador = ?";
         
-        try(PreparedStatement dc = conexion.prepareStatement(sql)){
-            dc.setInt(1, id_contador);
-            dc.executeUpdate();
+        try {
+            conexion.setAutoCommit(false);
             
+            try(PreparedStatement psRel = conexion.prepareStatement(sqlRelease)){
+                psRel.setInt(1, id_contador);
+                psRel.executeUpdate();
+            }
+            
+            try(PreparedStatement psDel = conexion.prepareStatement(sqlDelete)){
+                psDel.setInt(1, id_contador);
+                psDel.executeUpdate();
+            }
+            
+            conexion.commit();
             return "correcto";
         }catch(SQLException ex){
-            return "Error al eliminar el contador :" + ex.getMessage();
+            try {
+                if (conexion != null) conexion.rollback();
+            } catch(SQLException e2) {}
+            return "Error al dar de baja el contador: " + ex.getMessage();
+        } finally {
+            try {
+                if (conexion != null) conexion.setAutoCommit(true);
+            } catch(SQLException e3) {}
+        }
+    }
+
+    /**
+     * Funcion que permite modificar el nombre de un contador
+     * @param id_contador ID del contador a modificar
+     * @param nuevoNombre Nuevo nombre para el contador
+     * @return "correcto" o mensaje de error
+     */
+    public String updateNombreContador(int id_contador, String nuevoNombre){
+        String sql = "UPDATE contadores SET nombre_contador = ? WHERE id_contador = ?";
+        
+        try(PreparedStatement un = conexion.prepareStatement(sql)){
+            un.setString(1, nuevoNombre);
+            un.setInt(2, id_contador);
+            un.executeUpdate();
+            return "correcto";
+        }catch(SQLException ex){
+            return "Error al actualizar el nombre del contador: " + ex.getMessage();
         }
     }
     

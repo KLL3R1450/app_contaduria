@@ -36,13 +36,17 @@ public class ClientesDAO {
         try{
             conexion.setAutoCommit(false);
             
-            PreparedStatement insertC = conexion.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement insertC = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             insertC.setString(1, cliente.nombre);
-            insertC.setString(2,cliente.rfc);
+            insertC.setString(2, cliente.rfc);
             insertC.setString(3, cliente.cp);
             insertC.setString(4, cliente.correo);
             insertC.setInt(5, cliente.honorarios);
-            insertC.setInt(6,cliente.id_contador);
+            if (cliente.id_contador <= 0) {
+                insertC.setNull(6, java.sql.Types.INTEGER);
+            } else {
+                insertC.setInt(6, cliente.id_contador);
+            }
             insertC.setInt(7, 1);
             
             int insertado = insertC.executeUpdate();
@@ -156,7 +160,8 @@ public class ClientesDAO {
                     c.cp = rs.getString("cp_cliente");
                     c.correo = rs.getString("correo_cliente");
                     c.honorarios = rs.getInt("m_honorarios_cliente");
-                    c.id_contador = rs.getInt("id_contador");
+                    int idCont = rs.getInt("id_contador");
+                    c.id_contador = rs.wasNull() ? 0 : idCont;
                     
                     // Cargar regimenes de este cliente
                     String sqlReg = "SELECT id_regimen FROM regimenes_clientes WHERE id_cliente = ?";
@@ -208,6 +213,7 @@ public class ClientesDAO {
                     c.nombre = rs.getString("nombre_cliente");
                     c.rfc = rs.getString("rfc_cliente");
                     c.honorarios = rs.getInt("m_honorarios_cliente");
+                    c.id_contador = idContador;
                     lista.add(c);
                 }
             }
@@ -215,6 +221,47 @@ public class ClientesDAO {
             throw new RuntimeException("Error al obtener clientes del contador: " + e.getMessage(), e);
         }
         return lista;
+    }
+
+    public java.util.ArrayList<Cliente> getClientesSinContador() {
+        java.util.ArrayList<Cliente> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id_cliente, nombre_cliente, rfc_cliente, m_honorarios_cliente FROM clientes WHERE id_contador IS null";
+        try(PreparedStatement ps = conexion.prepareStatement(sql); ResultSet rs = ps.executeQuery()){
+            while(rs.next()){
+                Cliente c = new Cliente(rs.getInt("id_cliente"));
+                c.nombre = rs.getString("nombre_cliente");
+                c.rfc = rs.getString("rfc_cliente");
+                c.honorarios = rs.getInt("m_honorarios_cliente");
+                c.id_contador = 0;
+                lista.add(c);
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error al obtener clientes sin contador: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
+    public String asignarContador(int idCliente, int idContador) {
+        String sql = "UPDATE clientes SET id_contador = ? WHERE id_cliente = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idContador);
+            ps.setInt(2, idCliente);
+            ps.executeUpdate();
+            return "correcto";
+        }catch(SQLException ex){
+            return "Error al asignar contador al cliente: " + ex.getMessage();
+        }
+    }
+
+    public String desasignarContador(int idCliente) {
+        String sql = "UPDATE clientes SET id_contador = NULL WHERE id_cliente = ?";
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setInt(1, idCliente);
+            ps.executeUpdate();
+            return "correcto";
+        }catch(SQLException ex){
+            return "Error al quitar contador del cliente: " + ex.getMessage();
+        }
     }
 
 
@@ -372,7 +419,11 @@ public class ClientesDAO {
             update.setString(2, c.cp);
             update.setString(3, c.correo);
             update.setInt(4, c.honorarios);
-            update.setInt(5, c.id_contador);
+            if (c.id_contador <= 0) {
+                update.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                update.setInt(5, c.id_contador);
+            }
             update.setInt(6, idCliente);
             
             update.execute();

@@ -71,8 +71,12 @@ public class Controlador implements IControler{
         return dBClientes.getClientesDeContadorObj(idContador);
     }
     
+    public String insertContador(String nombre){
+        Contadores c = new Contadores(nombre, "SIN CONTACTO");
+        return insertContador(c);
+    }
+
     public String insertContador(Contadores contador){
-        
         String respuesta = dBContadores.insertContador(contador);
         
         if("correcto".equals(respuesta)){
@@ -89,15 +93,41 @@ public class Controlador implements IControler{
                 
         return respuesta;
     }
+
+    public String updateNombreContador(int idContador, String nombre){
+        String respuesta = dBContadores.updateNombreContador(idContador, nombre);
+        
+        if("correcto".equals(respuesta)){
+            if (contadores.containsKey(idContador)) {
+                contadores.get(idContador).nombre = nombre;
+            }
+        }
+        
+        return respuesta;
+    }
     
     public String updateContactoConta(String contacto, int idContador){
         String respuesta = dBContadores.updateContactoContador(contacto, idContador);
         
         if("correcto".equals(respuesta)){
-            contadores.get(idContador).contacto = contacto;
+            if (contadores.containsKey(idContador)) {
+                contadores.get(idContador).contacto = contacto;
+            }
         }
         
         return respuesta;
+    }
+
+    public ArrayList<Cliente> getClientesSinContador(){
+        return dBClientes.getClientesSinContador();
+    }
+
+    public String asignarClienteAContador(int idCliente, int idContador){
+        return dBClientes.asignarContador(idCliente, idContador);
+    }
+
+    public String desasignarCliente(int idCliente){
+        return dBClientes.desasignarContador(idCliente);
     }
     
 
