@@ -40,6 +40,8 @@ build/
 ### Custom Project Exclusions ###
 recibos_generados/
 .idea/
+*.log
+sources.txt
 
 data/*
 
