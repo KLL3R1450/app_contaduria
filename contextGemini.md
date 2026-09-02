@@ -107,6 +107,40 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Eliminación de Código Deprecated**: Se removieron todas las funciones marcadas con `@deprecated` en los DAOs y Controlador (tales como `getAllFirmas()`, `getAllDeclaraciones()`, etc.) y referencias huérfanas en diálogos, eliminando código basura.
 * **Corrección de Foco y Minimizado en Windows**: Se resolvió un bug de pérdida de foco del SO que minimizaba la aplicación al abrir/cerrar diálogos modales (como en listas o alertas) al asegurar que el método `setEnabled(true)` de la ventana padre se active antes de mostrar diálogos bloqueantes.
 
+### 13. Módulo de Gestión de Contadores y Cartera de Clientes
+* **Gestión de Contadores (`GestionContadores.java`)**:
+  * Alta de nuevos contadores solicitando únicamente su nombre.
+  * Renombrar contadores existentes en tiempo real.
+  * Baja lógica del contador con **liberación atómica de todos sus clientes** asociados (`UPDATE clientes SET id_contador = NULL WHERE id_contador = ?`), permitiendo que pasen a la cartera de clientes disponibles.
+* **Gestor de Cartera de Clientes**:
+  * Tabla superior con clientes asignados al contador seleccionado y botón para desasignar/liberar clientes.
+  * Tabla inferior con clientes sin contador asignado y botón para vincularlos de inmediato al contador seleccionado.
+  * Integración con `LEFT JOIN contadores` en vistas (`vw_clientes_activos`, `vw_semaforo_efirmas`) para mostrar `'SIN CONTADOR'` de forma segura y evitar que los clientes libres desaparezcan de los listados y búsquedas.
+* **Acceso desde Sidebar**: Botón `"Contadores"` añadido al panel lateral de `Index.java`.
+
+### 14. Pool de Conexiones Resiliente (Connection Pooling & Resiliencia en Red)
+* **Administrador de Pool (`ConectorBD.java`)**:
+  * Implementación de pool de conexiones (`ArrayBlockingQueue`) con capacidad máxima de 10 conexiones concurrentes y 2 conexiones precargadas.
+  * **Health-Check y Auto-Reconexión**: Cada llamada a `getConexion()` valida la salud de la conexión mediante `conn.isValid(2)`. Si la red sufrió un corte o MySQL cerró la conexión por inactividad (`wait_timeout`), la conexión muerta se descarta silenciosamente y se crea una nueva conexión física viva sin arrojar errores fatales.
+  * **Timeouts Rápidos**: Parámetros `connectTimeout=5000` (5 segundos) y `socketTimeout=15000` con `DriverManager.setLoginTimeout(5)` para fail-fast ante caídas de servidor central.
+  * **Proxy Dinámico para Reciclaje Automático**: Al invocar `conexion.close()`, un proxy dinámico intercepta la llamada, restaura `autoCommit=true` y retorna la conexión física al pool.
+* **Refactorización Completa de DAOs (Connection-per-Operation)**:
+  * Eliminación total de la variable estática `Connection conexion` en todos los DAOs (`ClientesDAO`, `ContadoresDAO`, `DeclaracionDAO`, `EFirmasDAO`, `PagosDAO`, `RegimenesDAO`, `TercerosDAO`).
+  * Cada método de persistencia obtiene una conexión bajo demanda mediante `try (Connection conexion = ConectorBD.getConexion()) { ... }` y la devuelve al pool al concluir.
+
+### 15. Integración de Subprogramas y Utilidad ExeLauncher (`ExeLauncher.java`)
+* **Ejecución Asíncrona de Subprogramas (.exe)**: Se implementó la clase utilitaria `utils.ExeLauncher` para invocar de forma desacoplada y asíncrona (mediante hilos Daemon) los ejecutables empaquetados del sistema, evitando bloquear el hilo de la interfaz de usuario (EDT).
+* **Búsqueda Dinámica por Extensión**: El gestor localiza automáticamente el archivo con extensión `.exe` dentro de sus respectivas carpetas sin depender de un nombre estático:
+  * `subprogramas/descarga_masiva/`: Módulo de Descarga Masiva (SAT CFDI / Opinión de cumplimiento).
+  * `subprogramas/lector_xml/`: Módulo Lector XML (XML Scrapped / Procesador XML a Excel).
+* **Gestión de Memoria y Resiliencia de Procesos**:
+  * **Drenado Continuo de Streams**: Se drena la salida estándar (`stdout`/`stderr`) en segundo plano para evitar desbordamiento de búfers en Windows que congelen los procesos hijos o causen fugas de memoria.
+  * **Cierre y Limpieza de Recursos**: Cierre explícito de todos los streams (`in`, `out`, `err`) y eliminación de referencias en el mapa concurrente de procesos activos.
+  * **Control de Instancia Única**: Bloqueo de lanzamientos duplicados con alertas visuales al usuario.
+  * **Re-enfoque Automático de Ventana**: Al cerrarse el subprograma, se devuelve el foco y se trae al frente la ventana principal de Swing (`toFront()` / `requestFocus()`).
+  * **Shutdown Hook**: Limpieza automática de subprocesos huérfanos al salir de la aplicación principal.
+* **Integración en la UI**: Se incorporaron los botones `"Descarga Masiva"` y `"Lector XML"` en el panel de navegación lateral (Sidebar) de `Index.java`.
+
 ---
 
 ## 🚫 Reglas Críticas del Sistema
