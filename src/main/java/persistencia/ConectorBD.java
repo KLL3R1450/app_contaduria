@@ -43,7 +43,7 @@ public abstract class ConectorBD {
     }
 
     private static Connection crearNuevaConexionFisica() throws SQLException {
-        String dbPath = ConfigLoader.get("DB_URI");
+        String dbPath = "jdbc:" + ConfigLoader.get("DB_URI");
         String user = ConfigLoader.get("DB_USER");
         String password = ConfigLoader.get("DB_PASSWORD");
 

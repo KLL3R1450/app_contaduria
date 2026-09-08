@@ -6,6 +6,7 @@ import entidades.EFirmas;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
+import utils.ExeLauncher;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -104,6 +105,16 @@ public class Index extends javax.swing.JFrame {
         JButton btnDeclaraciones = crearBotonSidebar(" Declaraciones");
         btnDeclaraciones.addActionListener(e -> abrirDeclaracionesContadores());
         sidebar.add(btnDeclaraciones);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        JButton btnDescargaMasiva = crearBotonSidebar(" Descarga Masiva");
+        btnDescargaMasiva.addActionListener(e -> ExeLauncher.lanzarDescargaMasiva(this));
+        sidebar.add(btnDescargaMasiva);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        JButton btnLectorXml = crearBotonSidebar(" Lector XML");
+        btnLectorXml.addActionListener(e -> ExeLauncher.lanzarLectorXml(this));
+        sidebar.add(btnLectorXml);
 
         // Separador flexible hacia el fondo
         sidebar.add(Box.createVerticalGlue());

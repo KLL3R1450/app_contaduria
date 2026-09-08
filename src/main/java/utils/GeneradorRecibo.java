@@ -25,11 +25,8 @@ public class GeneradorRecibo {
                 setField(acroForm, "monto", "$" + totalMonto);
             }
 
-            File outputDir = new File("recibos_generados");
-            if (!outputDir.exists()) {
-                outputDir.mkdirs();
-            }
-            String safeName = clienteNombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+            File outputDir = GestorCarpetas.getRutaRecibos();
+            String safeName = GestorCarpetas.sanitizar(clienteNombre);
             File outputFile = new File(outputDir, "recibo_" + safeName + "_" + System.currentTimeMillis() + ".pdf");
             document.save(outputFile);
             

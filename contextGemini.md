@@ -107,6 +107,71 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Eliminación de Código Deprecated**: Se removieron todas las funciones marcadas con `@deprecated` en los DAOs y Controlador (tales como `getAllFirmas()`, `getAllDeclaraciones()`, etc.) y referencias huérfanas en diálogos, eliminando código basura.
 * **Corrección de Foco y Minimizado en Windows**: Se resolvió un bug de pérdida de foco del SO que minimizaba la aplicación al abrir/cerrar diálogos modales (como en listas o alertas) al asegurar que el método `setEnabled(true)` de la ventana padre se active antes de mostrar diálogos bloqueantes.
 
+### 13. Módulo de Gestión de Contadores y Cartera de Clientes
+* **Gestión de Contadores (`GestionContadores.java`)**:
+  * Alta de nuevos contadores solicitando únicamente su nombre.
+  * Renombrar contadores existentes en tiempo real.
+  * Baja lógica del contador con **liberación atómica de todos sus clientes** asociados (`UPDATE clientes SET id_contador = NULL WHERE id_contador = ?`), permitiendo que pasen a la cartera de clientes disponibles.
+* **Gestor de Cartera de Clientes**:
+  * Tabla superior con clientes asignados al contador seleccionado y botón para desasignar/liberar clientes.
+  * Tabla inferior con clientes sin contador asignado y botón para vincularlos de inmediato al contador seleccionado.
+  * Integración con `LEFT JOIN contadores` en vistas (`vw_clientes_activos`, `vw_semaforo_efirmas`) para mostrar `'SIN CONTADOR'` de forma segura y evitar que los clientes libres desaparezcan de los listados y búsquedas.
+* **Acceso desde Sidebar**: Botón `"Contadores"` añadido al panel lateral de `Index.java`.
+
+### 14. Pool de Conexiones Resiliente (Connection Pooling & Resiliencia en Red)
+* **Administrador de Pool (`ConectorBD.java`)**:
+  * Implementación de pool de conexiones (`ArrayBlockingQueue`) con capacidad máxima de 10 conexiones concurrentes y 2 conexiones precargadas.
+  * **Health-Check y Auto-Reconexión**: Cada llamada a `getConexion()` valida la salud de la conexión mediante `conn.isValid(2)`. Si la red sufrió un corte o MySQL cerró la conexión por inactividad (`wait_timeout`), la conexión muerta se descarta silenciosamente y se crea una nueva conexión física viva sin arrojar errores fatales.
+  * **Timeouts Rápidos**: Parámetros `connectTimeout=5000` (5 segundos) y `socketTimeout=15000` con `DriverManager.setLoginTimeout(5)` para fail-fast ante caídas de servidor central.
+  * **Proxy Dinámico para Reciclaje Automático**: Al invocar `conexion.close()`, un proxy dinámico intercepta la llamada, restaura `autoCommit=true` y retorna la conexión física al pool.
+* **Refactorización Completa de DAOs (Connection-per-Operation)**:
+  * Eliminación total de la variable estática `Connection conexion` en todos los DAOs (`ClientesDAO`, `ContadoresDAO`, `DeclaracionDAO`, `EFirmasDAO`, `PagosDAO`, `RegimenesDAO`, `TercerosDAO`).
+  * Cada método de persistencia obtiene una conexión bajo demanda mediante `try (Connection conexion = ConectorBD.getConexion()) { ... }` y la devuelve al pool al concluir.
+
+### 15. Integración de Subprogramas y Utilidad ExeLauncher (`ExeLauncher.java`)
+* **Ejecución Asíncrona de Subprogramas (.exe)**: Se implementó la clase utilitaria `utils.ExeLauncher` para invocar de forma desacoplada y asíncrona (mediante hilos Daemon) los ejecutables empaquetados del sistema, evitando bloquear el hilo de la interfaz de usuario (EDT).
+* **Búsqueda Dinámica por Extensión**: El gestor localiza automáticamente el archivo con extensión `.exe` dentro de sus respectivas carpetas sin depender de un nombre estático:
+  * `subprogramas/descarga_masiva/`: Módulo de Descarga Masiva (SAT CFDI / Opinión de cumplimiento).
+  * `subprogramas/lector_xml/`: Módulo Lector XML (XML Scrapped / Procesador XML a Excel).
+* **Unificación de Conexión por `DB_URI`**:
+  * Python y Java comparten el mismo archivo `.env` central ubicado en la raíz de `app_contaduria/`.
+  * El módulo Python (`config.py` y `db.py`) detecta dinámicamente la ruta del `.env` navegando al directorio superior (`../../.env`) y transforma automáticamente la variable `DB_URI` (formato JDBC) al esquema de SQLAlchemy (`mysql+pymysql://...`), garantizando una única fuente de configuración para toda la infraestructura.
+* **Empaquetado de Subprogramas (.spec PyInstaller)**:
+  * El ejecutable `Descargador SAT.exe` fue generado y colocado en `subprogramas/descarga_masiva/` mediante `Descargador SAT.spec` con punto de entrada en `gui.py` y recolección total (`collect_all`) de los paquetes `satcfdi`, `pymysql`, `sqlmodel` y `pydantic_settings`.
+* **Gestión de Memoria y Resiliencia de Procesos**:
+  * **Drenado Continuo de Streams**: Se drena la salida estándar (`stdout`/`stderr`) en segundo plano para evitar desbordamiento de búfers en Windows que congelen los procesos hijos o causen fugas de memoria.
+  * **Cierre y Limpieza de Recursos**: Cierre explícito de todos los streams (`in`, `out`, `err`) y eliminación de referencias en el mapa concurrente de procesos activos.
+  * **Control de Instancia Única**: Bloqueo de lanzamientos duplicados con alertas visuales al usuario.
+  * **Re-enfoque Automático de Ventana**: Al cerrarse el subprograma, se devuelve el foco y se trae al frente la ventana principal de Swing (`toFront()` / `requestFocus()`).
+  * **Shutdown Hook**: Limpieza automática de subprocesos huérfanos al salir de la aplicación principal.
+* **Integración en la UI**: Se incorporaron los botones `"Descarga Masiva"` y `"Lector XML"` en el panel de navegación lateral (Sidebar) de `Index.java`.
+
+### 16. Centralización y Jerarquía de Carpetas (`GestorCarpetas.java`)
+* **Carpeta Raíz Común**: Se centralizó la creación y acceso a archivos generados bajo la carpeta `archivos/`.
+* **Subcarpeta de Recibos**: `archivos/recibos/` donde `GeneradorRecibo.java` deposita los comprobantes de pago de clientes.
+* **Subcarpetas por Contador y Cliente**: `archivos/{Nombre_Contador}/{Nombre_Cliente}/` para la persistencia organizada de opiniones del SAT y descargas de paquetes XML. Si el cliente no tiene contador asignado, se clasifica bajo `archivos/SIN_CONTADOR/{Nombre_Cliente}/`.
+* **Configuración Opcional en `.env`**: Posibilidad de personalizar nombres de carpetas (`DIR_ARCHIVOS`, `DIR_RECIBOS`, `DIR_SIN_CONTADOR`) mediante `ConfigLoader.getOrDefault()`.
+* **Sanitización de Nombres**: `GestorCarpetas.sanitizar()` limpia caracteres especiales (`\ / : * ? " < > |`) para máxima compatibilidad con el sistema de archivos de Windows.
+
+### 17. Sistema de Licenciamiento Offline (RSA 2048 + Amarre HWID)
+* **Criptografía Asimétrica**: Verificación de firma digital `SHA256withRSA` utilizando una clave pública RSA de 2048 bits embebida en `LicenseManager.java`.
+* **Amarre por Hardware (HWID)**: `HardwareUtils.getMotherboardUUID()` obtiene el UUID de la tarjeta madre vía PowerShell (`Win32_ComputerSystemProduct.UUID`) con fallbacks a WMIC y registro de Windows.
+* **Archivo `license.lic`**: Reside en la raíz del programa con formato:
+  ```properties
+  cliente=Nombre del Despacho
+  hwid=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  ---SIGNATURE---
+  <Firma_en_Base64>
+  ```
+* **Candado en el Arranque**: `LicenseManager.validarLicenciaOExit()` se ejecuta como primera instrucción en `Main.java`. Si no hay licencia o el HWID no coincide, muestra un diálogo con el HWID y botón para copiarlo al portapapeles, finalizando con `System.exit(0)`.
+* **Herramienta Emisora**: `tools/generador_licencias.py` genera el par de llaves y permite emitir archivos `.lic` firmados para clientes.
+
+### 18. Empaquetado en .JAR Autónomo (`AppDespacho.jar`)
+* **Fat/Uber JAR con `maven-shade-plugin`**: Configurado en `pom.xml` para empaquetar todas las dependencias (`FlatLaf`, `MySQL Connector`, `PDFBox`, `HikariCP`, `SLF4J`) en `target/AppDespacho.jar`.
+* **Manifest Ejecutable**: Clase principal `main.Main` asignada en el manifest.
+* **Filtros de Seguridad**: Exclusión automática de firmas obsoletas de dependencias (`META-INF/*.SF`, `*.DSA`, `*.RSA`).
+* **Ejecución Directa**: Se ejecuta mediante `java -jar target/AppDespacho.jar` (o doble clic) requiriendo únicamente el `.env` y `license.lic` en la carpeta de ejecución.
+
 ---
 
 ## 🚫 Reglas Críticas del Sistema
