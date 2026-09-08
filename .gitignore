@@ -43,6 +43,8 @@ recibos_generados/
 .idea/
 *.log
 sources.txt
+*.lic
+tools/*
 
 data/*
 

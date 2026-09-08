@@ -6,16 +6,20 @@ package main;
 
 import UI.Index;
 import controlador.Controlador;
-import entidades.Cliente;
+import utils.LicenseManager;
 
 public class Main {
     public static void main(String[] args) {
+        // 1. Verificación obligatoria de licencia offline y amarre por hardware
+        LicenseManager.validarLicenciaOExit();
+
+        // 2. Inicialización de interfaz y base de datos
         try {
             com.formdev.flatlaf.FlatLightLaf.setup();
         } catch(Exception ex) {
             System.err.println("Fallo al iniciar FlatLaf: " + ex.getMessage());
         }
-        Controlador c = Controlador.getControlador();;
+        Controlador c = Controlador.getControlador();
         c.cargarTodo();
         Index i = new Index(c);
         i.setVisible(true);
