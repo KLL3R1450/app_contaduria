@@ -146,6 +146,32 @@ La aplicación está diseñada bajo el patrón **MVC**:
   * **Shutdown Hook**: Limpieza automática de subprocesos huérfanos al salir de la aplicación principal.
 * **Integración en la UI**: Se incorporaron los botones `"Descarga Masiva"` y `"Lector XML"` en el panel de navegación lateral (Sidebar) de `Index.java`.
 
+### 16. Centralización y Jerarquía de Carpetas (`GestorCarpetas.java`)
+* **Carpeta Raíz Común**: Se centralizó la creación y acceso a archivos generados bajo la carpeta `archivos/`.
+* **Subcarpeta de Recibos**: `archivos/recibos/` donde `GeneradorRecibo.java` deposita los comprobantes de pago de clientes.
+* **Subcarpetas por Contador y Cliente**: `archivos/{Nombre_Contador}/{Nombre_Cliente}/` para la persistencia organizada de opiniones del SAT y descargas de paquetes XML. Si el cliente no tiene contador asignado, se clasifica bajo `archivos/SIN_CONTADOR/{Nombre_Cliente}/`.
+* **Configuración Opcional en `.env`**: Posibilidad de personalizar nombres de carpetas (`DIR_ARCHIVOS`, `DIR_RECIBOS`, `DIR_SIN_CONTADOR`) mediante `ConfigLoader.getOrDefault()`.
+* **Sanitización de Nombres**: `GestorCarpetas.sanitizar()` limpia caracteres especiales (`\ / : * ? " < > |`) para máxima compatibilidad con el sistema de archivos de Windows.
+
+### 17. Sistema de Licenciamiento Offline (RSA 2048 + Amarre HWID)
+* **Criptografía Asimétrica**: Verificación de firma digital `SHA256withRSA` utilizando una clave pública RSA de 2048 bits embebida en `LicenseManager.java`.
+* **Amarre por Hardware (HWID)**: `HardwareUtils.getMotherboardUUID()` obtiene el UUID de la tarjeta madre vía PowerShell (`Win32_ComputerSystemProduct.UUID`) con fallbacks a WMIC y registro de Windows.
+* **Archivo `license.lic`**: Reside en la raíz del programa con formato:
+  ```properties
+  cliente=Nombre del Despacho
+  hwid=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  ---SIGNATURE---
+  <Firma_en_Base64>
+  ```
+* **Candado en el Arranque**: `LicenseManager.validarLicenciaOExit()` se ejecuta como primera instrucción en `Main.java`. Si no hay licencia o el HWID no coincide, muestra un diálogo con el HWID y botón para copiarlo al portapapeles, finalizando con `System.exit(0)`.
+* **Herramienta Emisora**: `tools/generador_licencias.py` genera el par de llaves y permite emitir archivos `.lic` firmados para clientes.
+
+### 18. Empaquetado en .JAR Autónomo (`AppDespacho.jar`)
+* **Fat/Uber JAR con `maven-shade-plugin`**: Configurado en `pom.xml` para empaquetar todas las dependencias (`FlatLaf`, `MySQL Connector`, `PDFBox`, `HikariCP`, `SLF4J`) en `target/AppDespacho.jar`.
+* **Manifest Ejecutable**: Clase principal `main.Main` asignada en el manifest.
+* **Filtros de Seguridad**: Exclusión automática de firmas obsoletas de dependencias (`META-INF/*.SF`, `*.DSA`, `*.RSA`).
+* **Ejecución Directa**: Se ejecuta mediante `java -jar target/AppDespacho.jar` (o doble clic) requiriendo únicamente el `.env` y `license.lic` en la carpeta de ejecución.
+
 ---
 
 ## 🚫 Reglas Críticas del Sistema
