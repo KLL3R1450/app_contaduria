@@ -133,6 +133,11 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Búsqueda Dinámica por Extensión**: El gestor localiza automáticamente el archivo con extensión `.exe` dentro de sus respectivas carpetas sin depender de un nombre estático:
   * `subprogramas/descarga_masiva/`: Módulo de Descarga Masiva (SAT CFDI / Opinión de cumplimiento).
   * `subprogramas/lector_xml/`: Módulo Lector XML (XML Scrapped / Procesador XML a Excel).
+* **Unificación de Conexión por `DB_URI`**:
+  * Python y Java comparten el mismo archivo `.env` central ubicado en la raíz de `app_contaduria/`.
+  * El módulo Python (`config.py` y `db.py`) detecta dinámicamente la ruta del `.env` navegando al directorio superior (`../../.env`) y transforma automáticamente la variable `DB_URI` (formato JDBC) al esquema de SQLAlchemy (`mysql+pymysql://...`), garantizando una única fuente de configuración para toda la infraestructura.
+* **Empaquetado de Subprogramas (.spec PyInstaller)**:
+  * El ejecutable `Descargador SAT.exe` fue generado y colocado en `subprogramas/descarga_masiva/` mediante `Descargador SAT.spec` con punto de entrada en `gui.py` y recolección total (`collect_all`) de los paquetes `satcfdi`, `pymysql`, `sqlmodel` y `pydantic_settings`.
 * **Gestión de Memoria y Resiliencia de Procesos**:
   * **Drenado Continuo de Streams**: Se drena la salida estándar (`stdout`/`stderr`) en segundo plano para evitar desbordamiento de búfers en Windows que congelen los procesos hijos o causen fugas de memoria.
   * **Cierre y Limpieza de Recursos**: Cierre explícito de todos los streams (`in`, `out`, `err`) y eliminación de referencias en el mapa concurrente de procesos activos.

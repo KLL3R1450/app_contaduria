@@ -38,6 +38,7 @@ build/
 .DS_Store
 
 ### Custom Project Exclusions ###
+archivos/
 recibos_generados/
 .idea/
 *.log
