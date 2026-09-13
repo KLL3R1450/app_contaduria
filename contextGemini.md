@@ -172,6 +172,22 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Filtros de Seguridad**: Exclusión automática de firmas obsoletas de dependencias (`META-INF/*.SF`, `*.DSA`, `*.RSA`).
 * **Ejecución Directa**: Se ejecuta mediante `java -jar target/AppDespacho.jar` (o doble clic) requiriendo únicamente el `.env` y `license.lic` en la carpeta de ejecución.
 
+### 19. Soporte Multi-Equipo en Red LAN y Licenciamiento Multi-HWID
+* **Arquitectura Centralizada (1 Servidor Central + 3 a 4 Clientes Concurrentes)**:
+  * Base de datos MySQL, subprogramas `.exe`, plantilla `recibo.pdf` y la carpeta central compartida de `archivos/` residen en la Máquina Central.
+  * Los puestos cliente ejecutan `AppDespacho.jar` mediante acceso directo a una Unidad de Red mapeada (`Z:\`).
+  * Cada puesto cliente ejecuta su propia JVM en local y mantiene su propio pool de conexiones resilientes hacia el MySQL central.
+* **Licenciamiento Multi-HWID (`LicenseManager.java` & `generador_licencias.py`)**:
+  * `LicenseManager.java` soporta la validación de múltiples Hardware IDs (`hwids=UUID1,UUID2,UUID3...`) además del formato individual previo (`hwid=UUID`), permitiendo que todas las máquinas autorizadas compartan un único archivo `license.lic` central en el recurso compartido.
+  * `tools/generador_licencias.py` permite emitir licencias firmadas (RSA-2048 con SHA-256) con listas de HWIDs separadas por comas o como argumentos independientes en CLI.
+  * Se añadió la sobrecarga `validar(String rutaArchivo)` para flexibilizar la verificación en testing y auditorías.
+* **Sincronización en Memoria para Catálogos en Tiempo Real**:
+  * En `Controlador.java`, los métodos `getAllContadores()` y `getRegimenes()` invocan `recargarContadores()` y `recargarRegimenes()` en caliente contra MySQL. Esto garantiza que cualquier alta, baja o edición de contadores o regímenes realizada por un usuario se refleje inmediatamente en todos los clientes del despacho sin requerir reiniciar la aplicación.
+* **Rutas y Guardado Resiliente**:
+  * `GestorCarpetas.java` admite tanto rutas relativas como rutas absolutas de red (ej. `DIR_ARCHIVOS=Z:\archivos`) configurables vía `.env`.
+* **Guía Completa de Despliegue en Red**:
+  * Toda la configuración de firewall (puerto 3306), permisos SMB, IP estática, parámetros `my.ini` y mapeo de unidades de red `Z:` está documentada en `documentacion contaduria/Despliegue_Red_MultiEquipo.md`.
+
 ---
 
 ## 🚫 Reglas Críticas del Sistema

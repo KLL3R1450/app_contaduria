@@ -44,14 +44,21 @@ public class LicenseManager {
     }
 
     /**
-     * Valida la existencia, firma digital y amarre de hardware del archivo license.lic.
+     * Valida la existencia, firma digital y amarre de hardware del archivo de licencia predeterminado.
      */
     public static ResultadoValidacion validar() {
-        File file = new File(ARCHIVO_LICENCIA);
+        return validar(ARCHIVO_LICENCIA);
+    }
+
+    /**
+     * Valida la existencia, firma digital y amarre de hardware de un archivo de licencia específico.
+     */
+    public static ResultadoValidacion validar(String rutaArchivo) {
+        File file = new File(rutaArchivo);
         if (!file.exists() || !file.isFile()) {
             return new ResultadoValidacion(
                     false,
-                    "No se encontró el archivo de licencia '" + ARCHIVO_LICENCIA + "' en la carpeta principal.",
+                    "No se encontró el archivo de licencia '" + rutaArchivo + "' en la carpeta principal.",
                     null,
                     null
             );
@@ -79,24 +86,44 @@ public class LicenseManager {
             // 2. Extracción de propiedades del payload
             Map<String, String> props = parsearPropiedades(payload);
             String hwidLicencia = props.get("hwid");
+            String hwidsLicencia = props.get("hwids");
             String cliente = props.getOrDefault("cliente", "Desconocido");
 
-            if (hwidLicencia == null || hwidLicencia.isBlank()) {
+            // Recopilar todos los HWIDs autorizados (soporta 'hwid' individual y 'hwids' múltiple separado por comas o punto y coma)
+            java.util.Set<String> hwidsValidos = new java.util.HashSet<>();
+            if (hwidLicencia != null && !hwidLicencia.isBlank()) {
+                for (String h : hwidLicencia.split("[,;\\s]+")) {
+                    if (!h.isBlank()) {
+                        hwidsValidos.add(h.trim().toUpperCase());
+                    }
+                }
+            }
+            if (hwidsLicencia != null && !hwidsLicencia.isBlank()) {
+                for (String h : hwidsLicencia.split("[,;\\s]+")) {
+                    if (!h.isBlank()) {
+                        hwidsValidos.add(h.trim().toUpperCase());
+                    }
+                }
+            }
+
+            if (hwidsValidos.isEmpty()) {
                 return new ResultadoValidacion(false, "La licencia no contiene un Hardware ID válido.", cliente, null);
             }
 
             // 3. Verificación de amarre por Hardware ID
             String hwidActual = HardwareUtils.getMotherboardUUID();
-            if (!hwidLicencia.trim().equalsIgnoreCase(hwidActual.trim())) {
+            String hwidActualNorm = (hwidActual != null) ? hwidActual.trim().toUpperCase() : "";
+
+            if (!hwidsValidos.contains(hwidActualNorm)) {
                 return new ResultadoValidacion(
                         false,
-                        "La licencia no corresponde a este equipo.\nHWID Licencia: " + hwidLicencia + "\nHWID Actual: " + hwidActual,
+                        "La licencia no corresponde a este equipo.\nHWID Actual: " + hwidActual + "\nEquipos autorizados: " + hwidsValidos.size(),
                         cliente,
-                        hwidLicencia
+                        String.join(", ", hwidsValidos)
                 );
             }
 
-            return new ResultadoValidacion(true, "Licencia activa y válida.", cliente, hwidLicencia);
+            return new ResultadoValidacion(true, "Licencia activa y válida.", cliente, hwidActual);
 
         } catch (Exception e) {
             return new ResultadoValidacion(false, "Error al procesar la licencia: " + e.getMessage(), null, null);
@@ -186,8 +213,10 @@ public class LicenseManager {
     }
 
     public static void main(String[] args) {
+        String archivo = (args != null && args.length > 0) ? args[0] : ARCHIVO_LICENCIA;
         System.out.println("HWID detectado en Java: " + HardwareUtils.getMotherboardUUID());
-        ResultadoValidacion res = validar();
+        ResultadoValidacion res = validar(archivo);
+        System.out.println("Archivo evaluado: " + archivo);
         System.out.println("Validación de licencia: " + (res.valida ? "VÁLIDA (Cliente: " + res.cliente + ")" : "INVÁLIDA (" + res.mensaje + ")"));
     }
 }
