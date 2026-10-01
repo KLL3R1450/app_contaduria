@@ -211,11 +211,11 @@ public class AñadirCliente extends javax.swing.JDialog {
     }
 
     private void examinarFirmaArchivo(javax.swing.JTextField textField, String desc, String ext) {
-        javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+        javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser(utils.GestorCarpetas.getRutaFirmas());
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(desc, ext));
         int selection = fileChooser.showOpenDialog(this);
         if (selection == javax.swing.JFileChooser.APPROVE_OPTION) {
-            textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            textField.setText(utils.GestorCarpetas.aRutaRelativa(fileChooser.getSelectedFile()));
         }
     }
     
@@ -577,9 +577,9 @@ public class AñadirCliente extends javax.swing.JDialog {
         if (chkAgregarFirma != null && chkAgregarFirma.isSelected()) {
             String fExp = txtFExp.getText().trim();
             String fRen = txtFRen.getText().trim();
-            String rCert = txtFCert.getText().trim();
-            String rKey = txtFKey.getText().trim();
-            String rPass = txtFPass.getText().trim();
+            String rCert = utils.GestorCarpetas.aRutaRelativa(txtFCert.getText().trim());
+            String rKey = utils.GestorCarpetas.aRutaRelativa(txtFKey.getText().trim());
+            String rPass = utils.GestorCarpetas.aRutaRelativa(txtFPass.getText().trim());
             
             if (!fExp.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$") ||
                 !fRen.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {

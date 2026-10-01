@@ -119,11 +119,11 @@ public class EditarFirmaDialog extends JDialog {
     }
 
     private void examinarArchivo(JTextField textField, String desc, String ext) {
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = new JFileChooser(utils.GestorCarpetas.getRutaFirmas());
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(desc, ext));
         int selection = fileChooser.showOpenDialog(this);
         if (selection == JFileChooser.APPROVE_OPTION) {
-            textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            textField.setText(utils.GestorCarpetas.aRutaRelativa(fileChooser.getSelectedFile()));
         }
     }
 
@@ -148,9 +148,9 @@ public class EditarFirmaDialog extends JDialog {
     private void guardar() {
         String fExp = txtFechaExpiracion.getText().trim();
         String fRen = txtFechaRenovacion.getText().trim();
-        String rCert = txtRutaCertificado.getText().trim();
-        String rKey = txtRutaKey.getText().trim();
-        String rPass = txtRutaContrasena.getText().trim();
+        String rCert = utils.GestorCarpetas.aRutaRelativa(txtRutaCertificado.getText().trim());
+        String rKey = utils.GestorCarpetas.aRutaRelativa(txtRutaKey.getText().trim());
+        String rPass = utils.GestorCarpetas.aRutaRelativa(txtRutaContrasena.getText().trim());
 
         if (!validarFormato(fExp) || !validarFormato(fRen)) {
             JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Utilice AAAA-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);

@@ -28,6 +28,10 @@ public abstract class ConectorBD {
         if (inicializado) return;
         try {
             DriverManager.setLoginTimeout(TIMEOUT_SEGUNDOS);
+            
+            // Garantizar la creación automática de BD, tablas y vistas antes de poblar el pool
+            InicializadorBD.asegurarEstructuraBD();
+
             for (int i = 0; i < MIN_IDLE; i++) {
                 Connection conn = crearNuevaConexionFisica();
                 if (conn != null) {
