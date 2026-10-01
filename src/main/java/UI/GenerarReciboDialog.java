@@ -35,6 +35,7 @@ public class GenerarReciboDialog extends javax.swing.JDialog {
     private JButton btnEliminarExtra;
     
     // Totales y Acciones
+    private JComboBox<String> comboAprobo;
     private JLabel lblTotal;
     private JButton btnGenerar;
     private JButton btnCancelar;
@@ -170,29 +171,40 @@ public class GenerarReciboDialog extends javax.swing.JDialog {
         contentPane.add(panelCentral, BorderLayout.CENTER);
 
         // --- Panel Inferior: Totales y Acciones ---
-        JPanel panelInferior = new JPanel(new BorderLayout());
+        JPanel panelInferior = new JPanel(new BorderLayout(15, 10));
+        panelInferior.setBorder(new EmptyBorder(10, 0, 0, 0));
         
         lblTotal = new JLabel("Total a Cobrar: $0");
         lblTotal.setFont(lblTotal.getFont().deriveFont(18f).deriveFont(Font.BOLD));
-        lblTotal.setBorder(new EmptyBorder(10, 0, 10, 0));
         panelInferior.add(lblTotal, BorderLayout.WEST);
 
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel panelDerecho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        
+        JPanel panelAprobo = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        panelAprobo.add(new JLabel("Aprobó:"));
+        comboAprobo = new JComboBox<>(new String[]{
+            "SR ANDRES CONTRERAS VEGA",
+            "RUBI LEONOR RODRIGUEZ VENEGAS"
+        });
+        comboAprobo.putClientProperty("JComboBox.isButtonRoundRect", true);
+        panelAprobo.add(comboAprobo);
+        panelDerecho.add(panelAprobo);
+
         btnCancelar = new JButton("Cancelar");
         btnCancelar.putClientProperty("JButton.buttonType", "roundRect");
         btnCancelar.addActionListener(e -> dispose());
-        panelBotones.add(btnCancelar);
+        panelDerecho.add(btnCancelar);
 
         btnGenerar = new JButton("Confirmar y Generar Recibo");
         btnGenerar.putClientProperty("JButton.buttonType", "roundRect");
         btnGenerar.addActionListener(e -> confirmarYGenerar());
-        panelBotones.add(btnGenerar);
+        panelDerecho.add(btnGenerar);
 
-        panelInferior.add(panelBotones, BorderLayout.EAST);
+        panelInferior.add(panelDerecho, BorderLayout.EAST);
         contentPane.add(panelInferior, BorderLayout.SOUTH);
 
         pack();
-        setSize(750, 520);
+        setSize(800, 530);
     }
 
     private void cargarEstadoPagos() {
@@ -303,10 +315,18 @@ public class GenerarReciboDialog extends javax.swing.JDialog {
             sbPeriodos.append(" ").append(anioSeleccionado);
         }
 
-        // Agregar conceptos extras a la cadena de periodos
-        for (ExtraItem item : listaExtras) {
-            if (sbPeriodos.length() > 0) sbPeriodos.append(" + ");
-            sbPeriodos.append(item.concepto);
+        // Agregar conceptos extras a la cadena de periodos en formato (extra1, extra2, ...)
+        if (!listaExtras.isEmpty()) {
+            StringBuilder sbExtras = new StringBuilder();
+            for (ExtraItem item : listaExtras) {
+                if (sbExtras.length() > 0) sbExtras.append(", ");
+                sbExtras.append(item.concepto);
+            }
+            if (sbPeriodos.length() > 0) {
+                sbPeriodos.append(" (").append(sbExtras).append(")");
+            } else {
+                sbPeriodos.append("(").append(sbExtras).append(")");
+            }
         }
 
         int totalMonto = 0;
@@ -329,16 +349,25 @@ public class GenerarReciboDialog extends javax.swing.JDialog {
         }
 
         try {
-            String fechaHoy = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            String fechaRegistroBD = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+            
+            // Fecha con letra para el recibo (ej: "1 de octubre del 2026")
+            Calendar cal = Calendar.getInstance();
+            int dia = cal.get(Calendar.DAY_OF_MONTH);
+            int mesIdx = cal.get(Calendar.MONTH);
+            int anioHoy = cal.get(Calendar.YEAR);
+            String fechaReciboTexto = dia + " de " + NOMBRES_MESES[mesIdx].toLowerCase() + " del " + anioHoy;
+            
+            String personaAprobo = comboAprobo != null ? (String) comboAprobo.getSelectedItem() : "SR ANDRES CONTRERAS VEGA";
 
             // 1. Guardar registros en base de datos (uno por periodo)
             for (int mes : mesesAPagar) {
-                Pago nuevoPago = new Pago(cliente.id_persona, anioSeleccionado, mes, cliente.honorarios, fechaHoy);
+                Pago nuevoPago = new Pago(cliente.id_persona, anioSeleccionado, mes, cliente.honorarios, fechaRegistroBD);
                 controlador.registrarPago(nuevoPago);
             }
 
             // 2. Generar el PDF y abrirlo
-            GeneradorRecibo.generarPDF(cliente.nombre, fechaHoy, sbPeriodos.toString(), totalMonto);
+            GeneradorRecibo.generarPDF(cliente.nombre, fechaReciboTexto, sbPeriodos.toString(), totalMonto, personaAprobo);
 
             JOptionPane.showMessageDialog(this, "Pago registrado y recibo generado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             dispose();
