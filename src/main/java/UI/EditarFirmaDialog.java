@@ -46,7 +46,7 @@ public class EditarFirmaDialog extends JDialog {
 
         // Fecha Expiracion
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Fecha Expiración (YYYY-MM-DD):"), gbc);
+        formPanel.add(new JLabel("Fecha Expiración (DD/MM/YYYY):"), gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         txtFechaExpiracion = new JTextField();
         txtFechaExpiracion.putClientProperty("JTextField.roundRect", true);
@@ -54,7 +54,7 @@ public class EditarFirmaDialog extends JDialog {
 
         // Fecha Renovacion
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Fecha Renovación (YYYY-MM-DD):"), gbc);
+        formPanel.add(new JLabel("Fecha Renovación (DD/MM/YYYY):"), gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         txtFechaRenovacion = new JTextField();
         txtFechaRenovacion.putClientProperty("JTextField.roundRect", true);
@@ -135,7 +135,7 @@ public class EditarFirmaDialog extends JDialog {
             txtRutaKey.setText(firma.ruta_key != null ? firma.ruta_key : "");
             txtRutaContrasena.setText(firma.contrasena != null ? firma.contrasena : "");
         } else {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             String hoy = sdf.format(new Date());
             txtFechaExpiracion.setText(hoy);
             txtFechaRenovacion.setText(hoy);
@@ -153,7 +153,7 @@ public class EditarFirmaDialog extends JDialog {
         String rPass = utils.GestorCarpetas.aRutaRelativa(txtRutaContrasena.getText().trim());
 
         if (!validarFormato(fExp) || !validarFormato(fRen)) {
-            JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Utilice AAAA-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Utilice DD/MM/YYYY.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -168,7 +168,7 @@ public class EditarFirmaDialog extends JDialog {
     }
 
     private boolean validarFormato(String fecha) {
-        return fecha.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$");
+        return utils.Validator.validarFecha(fecha);
     }
 
     private String registrarONovacionFirma(String fExp, String fRen, String rCert, String rKey, String rPass, int idCliente) {

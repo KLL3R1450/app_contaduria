@@ -355,9 +355,9 @@ public class DetallesTerceros extends javax.swing.JDialog {
     }//GEN-LAST:event_checkCorreoActionPerformed
 
     private void cambiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiarActionPerformed
-        if(FCP.getText().isEmpty() || FCorreo.getText().isEmpty() || FNombre.getText().isEmpty()){
+        if(FCP.getText().isEmpty() || FNombre.getText().isEmpty()){
 
-            JOptionPane.showMessageDialog(this, "Ningun campo puede estar vacio");
+            JOptionPane.showMessageDialog(this, "Ningun campo obligatorio puede estar vacio");
             return;
 
         }
@@ -368,7 +368,7 @@ public class DetallesTerceros extends javax.swing.JDialog {
             return;
         }
 
-        if(!Validator.validarCorreo(FCorreo.getText())){
+        if(!Validator.validarCorreoOpcional(FCorreo.getText())){
 
             JOptionPane.showMessageDialog(this, "Correo no valido");
             return;
@@ -379,12 +379,16 @@ public class DetallesTerceros extends javax.swing.JDialog {
         int decision = JOptionPane.showConfirmDialog(this, "Estas seguro de cambiar los datos");
 
         if(JOptionPane.YES_OPTION == decision){
+            String correoFinal = FCorreo.getText().trim();
+            if (Validator.isCorreoVacioOSinCorreo(correoFinal)) {
+                correoFinal = correoFinal.isEmpty() ? "SIN CORREO" : correoFinal;
+            }
 
             tercero.updateTercero(
-                  FNombre.getText(), 
-                    FRFC.getText(),
-                     FCP.getText(), 
-                  FCorreo.getText());
+                  FNombre.getText().trim(), 
+                    FRFC.getText().trim().toUpperCase(),
+                     FCP.getText().trim(), 
+                  correoFinal);
 
             String respuesta = c.updateTercero(tercero);
 

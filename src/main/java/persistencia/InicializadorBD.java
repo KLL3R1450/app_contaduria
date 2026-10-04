@@ -23,7 +23,7 @@ public class InicializadorBD {
     public static synchronized void asegurarEstructuraBD() {
         if (verificado) return;
 
-        String rawUri = ConfigLoader.getOrDefault("DB_URI", "localhost:3306/despacho_db?useSSL=false&serverTimezone=America/Mexico_City&allowPublicKeyRetrieval=true");
+        String rawUri = ConfigLoader.getOrDefault("DB_URI", "localhost:3306/despachito_db?useSSL=false&serverTimezone=America/Mexico_City&allowPublicKeyRetrieval=true");
         String user = ConfigLoader.getOrDefault("DB_USER", "root");
         String password = ConfigLoader.getOrDefault("DB_PASSWORD", "");
 
@@ -177,8 +177,8 @@ public class InicializadorBD {
                 "CREATE TABLE IF NOT EXISTS e_firmas (" +
                 "  id_firma INT PRIMARY KEY AUTO_INCREMENT," +
                 "  id_cliente INT NOT NULL UNIQUE," +
-                "  fecha_expiracion VARCHAR(20) NOT NULL," +
                 "  fecha_renovacion VARCHAR(20) NOT NULL," +
+                "  fecha_expiracion VARCHAR(20) NOT NULL," +
                 "  ruta_certificado VARCHAR(500)," +
                 "  ruta_key VARCHAR(500)," +
                 "  contrasena VARCHAR(500)," +
@@ -248,15 +248,33 @@ public class InicializadorBD {
         try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM regimenes")) {
             if (rs.next() && rs.getInt(1) == 0) {
                 stmt.executeUpdate(
-                        "INSERT INTO regimenes (id_regimen, des_regimen) VALUES " +
-                        "(601, 'General de Ley Personas Morales'), " +
-                        "(603, 'Personas Morales con Fines no Lucrativos'), " +
-                        "(605, 'Sueldos y Salarios e Ingresos Asimilados a Salarios'), " +
-                        "(606, 'Arrendamiento'), " +
-                        "(612, 'Personas Físicas con Actividades Empresariales y Profesionales'), " +
-                        "(621, 'Incorporación Fiscal'), " +
-                        "(625, 'Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas'), " +
-                        "(626, 'Régimen Simplificado de Confianza (RESICO)')"
+                    "INSERT INTO regimenes (id_regimen, des_regimen) VALUES " +
+                                "(601, 'GENERAL DE LEY PERSONAS MORALES'), " +
+                                "(602, 'SIMPLIFICADO DE LEY PERSONAS MORALES'), " +
+                                "(603, 'PERSONAS MORALES CON FINES NO LUCRATIVOS'), " +
+                                "(604, 'REGIMEN DE PEQUEÑOS CONTRIBUYENTES'), " +
+                                "(605, 'SUELDOS Y SALARIOS E INGRESOS ASIMILADOS A SALARIOS'), " +
+                                "(606, 'ARRENDAMIENTO'), " +
+                                "(607, 'ENAJENACION O ADQUISICION DE BIENES'), " +
+                                "(608, 'DE LOS DEMAS INGRESOS'), " +
+                                "(609, 'CONSOLIDACION'), " +
+                                "(610, 'RESIDENTES EN EL EXTRANJERO SIN ESTABLECIMIENTO PERMANENTE EN MEXICO'), " +
+                                "(611, 'DE INGRESOS POR DIVIDENDOS'), " +
+                                "(612, 'PERSONAS FISICAS CON ACTIVIDADES EMPRESARIALES Y PROFESIONALES'), " +
+                                "(613, 'INTERMEDIO DE LAS PERSONAS FISICAS CON ACTIVIDADES EMPRESARIALES'), " +
+                                "(614, 'DE LOS INGRESOS POR INTERESES'), " +
+                                "(615, 'DE LOS INGRESOS POR OBTENCION DE PREMIOS'), " +
+                                "(616, 'SIN OBLIGACIONES FISCALES'), " +
+                                "(617, 'PEMEX'), " +
+                                "(618, 'SIMPLIFICADO DE LEY PERSONAS FISICAS'), " +
+                                "(619, 'INGRESOS POR LA OBTENCION DE PRESTAMOS'), " +
+                                "(620, 'SOCIEDADES COOPERATIVAS DE PRODUCCION QUE OPTAN POR DIFERIR SUS INGRESOS'), " +
+                                "(621, 'INCORPORACION FISCAL'), " +
+                                "(622, 'ACTIVIDADES AGRICOLAS, GANADERAS, SILVICOLAS Y PESQUERAS'), " +
+                                "(623, 'OPCIONAL PARA GRUPOS DE SOCIEDADES'), " +
+                                "(624, 'COORDINADOS'), " +
+                                "(625, 'ACTIVIDADES EMPRESARIALES CON INGRESOS A TRAVES DE PLATAFORMAS TECNOLOGICAS'), " +
+                                "(626, 'SIMPLIFICADO DE CONFIANZA')"
                 );
                 System.out.println("Catálogo 'regimenes' inicializado con regímenes SAT estándar.");
             }
@@ -326,11 +344,11 @@ public class InicializadorBD {
                 "    ef.ruta_certificado, " +
                 "    ef.ruta_key, " +
                 "    ef.contrasena, " +
-                "    DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%Y-%m-%d'), CURDATE()) AS dias_restantes, " +
+                "    DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%d/%m/%Y'), CURDATE()) AS dias_restantes, " +
                 "    CASE " +
-                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%Y-%m-%d'), CURDATE()) < 0 THEN 'VENCIDA' " +
-                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%Y-%m-%d'), CURDATE()) <= 30 THEN 'URGENTE' " +
-                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%Y-%m-%d'), CURDATE()) <= 365 THEN 'PROXIMA' " +
+                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%d/%m/%Y'), CURDATE()) < 0 THEN 'VENCIDA' " +
+                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%d/%m/%Y'), CURDATE()) <= 30 THEN 'URGENTE' " +
+                "        WHEN DATEDIFF(STR_TO_DATE(ef.fecha_expiracion, '%d/%m/%Y'), CURDATE()) <= 365 THEN 'PROXIMA' " +
                 "        ELSE 'VIGENTE' " +
                 "    END AS estado_alerta " +
                 "FROM clientes c " +

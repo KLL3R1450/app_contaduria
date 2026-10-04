@@ -188,6 +188,16 @@ La aplicación está diseñada bajo el patrón **MVC**:
 * **Guía Completa de Despliegue en Red**:
   * Toda la configuración de firewall (puerto 3306), permisos SMB, IP estática, parámetros `my.ini` y mapeo de unidades de red `Z:` está documentada en `documentacion contaduria/Despliegue_Red_MultiEquipo.md`.
 
+### 20. Correo Opcional y Formato de Fechas DD/MM/YYYY
+* **Correo Opcional y Manejo de Sin Correo (`Validator.java`)**:
+  * Se añadieron los métodos `isCorreoVacioOSinCorreo(String correo)` y `validarCorreoOpcional(String correo)` para reconocer y permitir valores como `"SIN CORREO"`, `"S/C"`, `"NO TIENE"`, `"N/A"`, `"NA"`, `"NINGUNO"`, `"NO"`, `"S/N"`, `"-"`, o campos vacíos.
+  * Se corrigió `validarCorreo(String correo)` aplicando `.trim()` previo para evitar falsos negativos por espacios accidentales al inicio o final (aceptando correos válidos estándar como `pelcaste@gmail.com`).
+  * En los formularios de Clientes y Terceros (`AñadirCliente`, `añadirTercero`, `DetallesClientes`, `DetallesTerceros`), el correo dejó de ser obligatorio y ahora se valida mediante `validarCorreoOpcional`, normalizando a `"SIN CORREO"` cuando el campo se envía en blanco.
+* **Formato Global de Fechas a `DD/MM/YYYY`**:
+  * Se implementó `Validator.validarFecha(String fecha)` que valida el formato estricto `DD/MM/YYYY` (`^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$`) y comprueba la coherencia del calendario (días por mes y años bisiestos con `DateTimeFormatter.ofPattern("dd/MM/uuuu")`).
+  * Se actualizaron las etiquetas visuales a `(DD/MM/YYYY)`, la inicialización por defecto con `SimpleDateFormat("dd/MM/yyyy")` y las validaciones de guardado en los formularios de e-firmas (`AñadirCliente` y `EditarFirmaDialog`).
+  * En `InicializadorBD.java`, la vista `vw_semaforo_efirmas` se actualizó para calcular los días restantes y estados de alerta utilizando `STR_TO_DATE(ef.fecha_expiracion, '%d/%m/%Y')`.
+
 ---
 
 ## 🚫 Reglas Críticas del Sistema

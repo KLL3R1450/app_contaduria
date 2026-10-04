@@ -128,17 +128,17 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         // Expiration
         sGbc.gridx = 0; sGbc.gridy = 0; sGbc.weightx = 0.3;
-        fieldsPanel.add(new javax.swing.JLabel("Expira (YYYY-MM-DD):"), sGbc);
+        fieldsPanel.add(new javax.swing.JLabel("Expira (DD/MM/YYYY):"), sGbc);
         sGbc.gridx = 1; sGbc.weightx = 0.7;
         txtFExp = new javax.swing.JTextField(10);
         txtFExp.putClientProperty("JTextField.roundRect", true);
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
         txtFExp.setText(sdf.format(new java.util.Date()));
         fieldsPanel.add(txtFExp, sGbc);
         
         // Renewal
         sGbc.gridx = 0; sGbc.gridy = 1; sGbc.weightx = 0.3;
-        fieldsPanel.add(new javax.swing.JLabel("Renovación (YYYY-MM-DD):"), sGbc);
+        fieldsPanel.add(new javax.swing.JLabel("Renovación (DD/MM/YYYY):"), sGbc);
         sGbc.gridx = 1; sGbc.weightx = 0.7;
         txtFRen = new javax.swing.JTextField(10);
         txtFRen.putClientProperty("JTextField.roundRect", true);
@@ -233,7 +233,7 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         if (chkAgregarFirma != null) {
             chkAgregarFirma.setSelected(false);
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
             String hoy = sdf.format(new java.util.Date());
             txtFExp.setText(hoy);
             txtFRen.setText(hoy);
@@ -513,7 +513,7 @@ public class AñadirCliente extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         
-        if(TNom.getText().isEmpty() || TCorr.getText().isEmpty() || TCp.getText().isEmpty()
+        if(TNom.getText().isEmpty() || TCp.getText().isEmpty()
                 || THon.getText().isEmpty() || TRfc.getText().isEmpty() || CCon.getSelectedIndex() == 0){
             JOptionPane.showMessageDialog(rootPane, "Valores no validos");
             return;
@@ -524,7 +524,7 @@ public class AñadirCliente extends javax.swing.JDialog {
             return;
         }
         
-        if(!Validator.validarCorreo(TCorr.getText())){
+        if(!Validator.validarCorreoOpcional(TCorr.getText())){
             JOptionPane.showMessageDialog(rootPane, "Correo no valido");
             return;
         }
@@ -534,7 +534,7 @@ public class AñadirCliente extends javax.swing.JDialog {
             return;
         }
         
-        String formatedRFC = TRfc.getText().toUpperCase();
+        String formatedRFC = TRfc.getText().toUpperCase().trim();
         
         if(!Validator.validarRFC(formatedRFC)){
             JOptionPane.showMessageDialog(rootPane, "RFC no valido");
@@ -543,7 +543,7 @@ public class AñadirCliente extends javax.swing.JDialog {
        
         int montoH = 0;
         try{
-            montoH = Integer.parseInt(THon.getText());
+            montoH = Integer.parseInt(THon.getText().trim());
         }catch(NumberFormatException ex){
             JOptionPane.showMessageDialog(rootPane, "El monto no es un numero valido");
             return;
@@ -563,11 +563,16 @@ public class AñadirCliente extends javax.swing.JDialog {
         
         for(Object regimen : añadidos) idReg.add(((Regimenes)regimen).getId());
         
+        String correoFinal = TCorr.getText().trim();
+        if (Validator.isCorreoVacioOSinCorreo(correoFinal)) {
+            correoFinal = correoFinal.isEmpty() ? "SIN CORREO" : correoFinal;
+        }
+        
         Cliente cliente = new Cliente(
-                TNom.getText(), 
+                TNom.getText().trim(), 
                   formatedRFC, 
-                   TCp.getText(),
-                TCorr.getText(), 
+                   TCp.getText().trim(),
+                correoFinal, 
                  montoH, 
             idContador);
         
@@ -581,9 +586,8 @@ public class AñadirCliente extends javax.swing.JDialog {
             String rKey = utils.GestorCarpetas.aRutaRelativa(txtFKey.getText().trim());
             String rPass = utils.GestorCarpetas.aRutaRelativa(txtFPass.getText().trim());
             
-            if (!fExp.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$") ||
-                !fRen.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {
-                JOptionPane.showMessageDialog(rootPane, "Formato de fecha de firma inválido. Utilice AAAA-MM-DD.");
+            if (!Validator.validarFecha(fExp) || !Validator.validarFecha(fRen)) {
+                JOptionPane.showMessageDialog(rootPane, "Formato de fecha de firma inválido. Utilice DD/MM/YYYY.");
                 return;
             }
             

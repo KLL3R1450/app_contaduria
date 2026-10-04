@@ -514,7 +514,7 @@ public class DetallesClientes extends javax.swing.JDialog {
     }//GEN-LAST:event_checkContadorActionPerformed
 
     private void cambiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiarActionPerformed
-        if(FCP.getText().isEmpty() || FCorreo.getText().isEmpty() || FNombre.getText().isEmpty() 
+        if(FCP.getText().isEmpty()  || FNombre.getText().isEmpty() 
                 || FHonorarios.getText().isEmpty() || ComboContadores.getSelectedIndex() == 0){
             
             JOptionPane.showMessageDialog(this, "Ningun campo puede estar vacio");
@@ -528,19 +528,16 @@ public class DetallesClientes extends javax.swing.JDialog {
             return;
         }
             
-
-        if(!Validator.validarCorreo(FCorreo.getText())){
-            
+        if(!Validator.validarCorreoOpcional(FCorreo.getText())){
             JOptionPane.showMessageDialog(this, "Correo no valido");
             return;
-        
         }
         
         int honorarios;
         
         try{
             
-            honorarios = Integer.parseInt(FHonorarios.getText());
+            honorarios = Integer.parseInt(FHonorarios.getText().trim());
             
         }catch(NumberFormatException ex){
             JOptionPane.showMessageDialog(this, "Los honorarios tienen que ser un numero valido");
@@ -565,11 +562,15 @@ public class DetallesClientes extends javax.swing.JDialog {
         int decision = JOptionPane.showConfirmDialog(this, "Estas seguro de cambiar los datos");
         
         if(JOptionPane.YES_OPTION == decision){
+            String correoFinal = FCorreo.getText().trim();
+            if (Validator.isCorreoVacioOSinCorreo(correoFinal)) {
+                correoFinal = correoFinal.isEmpty() ? "SIN CORREO" : correoFinal;
+            }
             
             cliente.updateCliente(
-                    FNombre.getText(), 
-                       FCP.getText(), 
-                    FCorreo.getText(),
+                    FNombre.getText().trim(), 
+                       FCP.getText().trim(), 
+                    correoFinal,
                     honorarios, 
                 idContador
             );

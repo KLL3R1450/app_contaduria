@@ -375,7 +375,7 @@ public class añadirTercero extends javax.swing.JDialog {
             return;
         }
 
-        if(!Validator.validarCorreo(TCorr.getText()) && !TCorr.getText().isEmpty()){
+        if(!Validator.validarCorreoOpcional(TCorr.getText())){
             JOptionPane.showMessageDialog(rootPane, "Correo no valido");
             return;
         }
@@ -385,7 +385,7 @@ public class añadirTercero extends javax.swing.JDialog {
             return;
         }
 
-        if(!Validator.validarRFC(TRfc.getText())){
+        if(!Validator.validarRFC(TRfc.getText().trim().toUpperCase())){
             JOptionPane.showMessageDialog(rootPane, "RFC no valido");
             return;
         }
@@ -397,11 +397,16 @@ public class añadirTercero extends javax.swing.JDialog {
 
         for(Object cliente : listaClientesA) idClientes.add(((Cliente)cliente).id_persona);
         
+        String correoFinal = TCorr.getText().trim();
+        if (Validator.isCorreoVacioOSinCorreo(correoFinal)) {
+            correoFinal = correoFinal.isEmpty() ? "SIN CORREO" : correoFinal;
+        }
+
         Terceros tercero = new Terceros(
-            TNom.getText(),
-            TRfc.getText(),
-            TCp.getText(),
-            TCorr.getText());
+            TNom.getText().trim(),
+            TRfc.getText().trim().toUpperCase(),
+            TCp.getText().trim(),
+            correoFinal);
 
         tercero.idsRegimenes = idReg;
 
