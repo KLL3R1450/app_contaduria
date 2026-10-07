@@ -16,8 +16,8 @@ public class EditarFirmaDialog extends JDialog {
     private final Cliente cliente;
     private final EFirmas firma;
     
-    private JTextField txtFechaExpiracion;
-    private JTextField txtFechaRenovacion;
+    private DatePickerField txtFechaExpiracion;
+    private DatePickerField txtFechaRenovacion;
     private JTextField txtRutaCertificado;
     private JTextField txtRutaKey;
     private JTextField txtRutaContrasena;
@@ -34,11 +34,13 @@ public class EditarFirmaDialog extends JDialog {
     }
 
     private void initComponents() {
-        setMinimumSize(new Dimension(550, 350));
+        setMinimumSize(new Dimension(580, 360));
         setResizable(false);
         setLayout(new BorderLayout(15, 15));
+        getContentPane().setBackground(AppTheme.BACKGROUND);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(AppTheme.BACKGROUND);
         formPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
@@ -46,58 +48,69 @@ public class EditarFirmaDialog extends JDialog {
 
         // Fecha Expiracion
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Fecha Expiración (DD/MM/YYYY):"), gbc);
+        JLabel lblExp = new JLabel("Fecha Expiración (DD/MM/YYYY):");
+        lblExp.setForeground(AppTheme.TEXT_PRIMARY);
+        formPanel.add(lblExp, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
-        txtFechaExpiracion = new JTextField();
-        txtFechaExpiracion.putClientProperty("JTextField.roundRect", true);
+        txtFechaExpiracion = new DatePickerField();
         formPanel.add(txtFechaExpiracion, gbc);
 
         // Fecha Renovacion
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Fecha Renovación (DD/MM/YYYY):"), gbc);
+        JLabel lblRen = new JLabel("Fecha Renovación (DD/MM/YYYY):");
+        lblRen.setForeground(AppTheme.TEXT_PRIMARY);
+        formPanel.add(lblRen, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
-        txtFechaRenovacion = new JTextField();
-        txtFechaRenovacion.putClientProperty("JTextField.roundRect", true);
+        txtFechaRenovacion = new DatePickerField();
         formPanel.add(txtFechaRenovacion, gbc);
 
         // Ruta Certificado
         gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Certificado (.cer):"), gbc);
+        JLabel lblCert = new JLabel("Certificado (.cer):");
+        lblCert.setForeground(AppTheme.TEXT_PRIMARY);
+        formPanel.add(lblCert, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         JPanel certPanel = new JPanel(new BorderLayout(5, 0));
+        certPanel.setBackground(AppTheme.BACKGROUND);
         txtRutaCertificado = new JTextField();
         txtRutaCertificado.putClientProperty("JTextField.roundRect", true);
         certPanel.add(txtRutaCertificado, BorderLayout.CENTER);
         JButton btnCert = new JButton("Examinar...");
-        btnCert.putClientProperty("JButton.buttonType", "roundRect");
+        AppTheme.styleSecondaryButton(btnCert);
         btnCert.addActionListener(e -> examinarArchivo(txtRutaCertificado, "Archivos Certificado (*.cer)", "cer"));
         certPanel.add(btnCert, BorderLayout.EAST);
         formPanel.add(certPanel, gbc);
 
         // Ruta Key
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Llave privada (.key):"), gbc);
+        JLabel lblKey = new JLabel("Llave privada (.key):");
+        lblKey.setForeground(AppTheme.TEXT_PRIMARY);
+        formPanel.add(lblKey, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         JPanel keyPanel = new JPanel(new BorderLayout(5, 0));
+        keyPanel.setBackground(AppTheme.BACKGROUND);
         txtRutaKey = new JTextField();
         txtRutaKey.putClientProperty("JTextField.roundRect", true);
         keyPanel.add(txtRutaKey, BorderLayout.CENTER);
         JButton btnKey = new JButton("Examinar...");
-        btnKey.putClientProperty("JButton.buttonType", "roundRect");
+        AppTheme.styleSecondaryButton(btnKey);
         btnKey.addActionListener(e -> examinarArchivo(txtRutaKey, "Archivos Key (*.key)", "key"));
         keyPanel.add(btnKey, BorderLayout.EAST);
         formPanel.add(keyPanel, gbc);
 
         // Ruta Contraseña (.txt)
         gbc.gridx = 0; gbc.gridy = 4; gbc.weightx = 0.3;
-        formPanel.add(new JLabel("Contraseña (.txt):"), gbc);
+        JLabel lblPass = new JLabel("Contraseña (.txt):");
+        lblPass.setForeground(AppTheme.TEXT_PRIMARY);
+        formPanel.add(lblPass, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         JPanel passPanel = new JPanel(new BorderLayout(5, 0));
+        passPanel.setBackground(AppTheme.BACKGROUND);
         txtRutaContrasena = new JTextField();
         txtRutaContrasena.putClientProperty("JTextField.roundRect", true);
         passPanel.add(txtRutaContrasena, BorderLayout.CENTER);
         JButton btnPass = new JButton("Examinar...");
-        btnPass.putClientProperty("JButton.buttonType", "roundRect");
+        AppTheme.styleSecondaryButton(btnPass);
         btnPass.addActionListener(e -> examinarArchivo(txtRutaContrasena, "Archivos de texto (*.txt)", "txt"));
         passPanel.add(btnPass, BorderLayout.EAST);
         formPanel.add(passPanel, gbc);
@@ -105,13 +118,15 @@ public class EditarFirmaDialog extends JDialog {
         add(formPanel, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
-        JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.putClientProperty("JButton.buttonType", "roundRect");
-        btnGuardar.addActionListener(e -> guardar());
+        btnPanel.setBackground(AppTheme.PANEL_BACKGROUND);
 
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.putClientProperty("JButton.buttonType", "roundRect");
+        AppTheme.styleSecondaryButton(btnCancelar);
         btnCancelar.addActionListener(e -> dispose());
+
+        JButton btnGuardar = new JButton("Guardar");
+        AppTheme.stylePrimaryButton(btnGuardar);
+        btnGuardar.addActionListener(e -> guardar());
 
         btnPanel.add(btnCancelar);
         btnPanel.add(btnGuardar);

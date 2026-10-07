@@ -2,7 +2,6 @@ package UI;
 
 import controlador.Controlador;
 import entidades.Cliente;
-import entidades.EFirmas;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
@@ -10,14 +9,13 @@ import utils.ExeLauncher;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Map;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
 
 /**
- * Modern Dashboard Principal utilizing FlatLaf
+ * Modern Dashboard Principal utilizing FlatLaf y Paleta Corporativa
  * @author Osmar & Antigravity
  */
 public class Index extends javax.swing.JFrame {
@@ -31,6 +29,14 @@ public class Index extends javax.swing.JFrame {
     private JTable tblFirmas;
     private DefaultTableModel tableModel;
 
+    // Control de Paginación para Semáforo de E-Firmas
+    private int paginaActual = 0;
+    private static final int TAMANO_PAGINA = 15;
+    private int totalFirmas = 0;
+    private JButton btnVerMenos;
+    private JButton btnVerMas;
+    private JLabel lblPaginacion;
+
     public Index(Controlador controler) {
         c = controler;
         initComponentsCustom();
@@ -40,7 +46,7 @@ public class Index extends javax.swing.JFrame {
     private void initComponentsCustom() {
         setTitle("Despacho Contable - Dashboard");
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setMinimumSize(new Dimension(950, 600));
+        setMinimumSize(new Dimension(980, 640));
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
@@ -53,6 +59,7 @@ public class Index extends javax.swing.JFrame {
 
         // Contenedor principal con BorderLayout
         JPanel mainContainer = new JPanel(new BorderLayout());
+        mainContainer.setBackground(AppTheme.BACKGROUND);
         setContentPane(mainContainer);
 
         // ================= SIDEBAR (Panel Lateral Izquierdo) =================
@@ -60,57 +67,57 @@ public class Index extends javax.swing.JFrame {
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setPreferredSize(new Dimension(240, 600));
         sidebar.setBorder(new EmptyBorder(25, 20, 25, 20));
-        sidebar.setBackground(UIManager.getColor("Panel.background")); // FlatLaf color
+        sidebar.setBackground(AppTheme.PANEL_BACKGROUND);
 
         // Título Logo
         JLabel lblLogo = new JLabel("CONTABILIDAD");
         lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblLogo.setForeground(AppTheme.PRIMARY);
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblSubLogo = new JLabel("Dashboard Principal");
         lblSubLogo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblSubLogo.setForeground(UIManager.getColor("Label.disabledForeground"));
+        lblSubLogo.setForeground(AppTheme.TEXT_SECONDARY);
         lblSubLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         sidebar.add(lblLogo);
         sidebar.add(lblSubLogo);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 40)));
-
+        sidebar.add(Box.createRigidArea(new Dimension(0, 30)));
 
         JButton btnClientes = crearBotonSidebar(" Clientes");
         btnClientes.addActionListener(e -> abrirBuscarClientes());
         sidebar.add(btnClientes);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnTerceros = crearBotonSidebar(" Terceros");
         btnTerceros.addActionListener(e -> abrirBuscarTerceros());
         sidebar.add(btnTerceros);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnFirmas = crearBotonSidebar(" E-Firmas");
         btnFirmas.addActionListener(e -> abrirBuscarFirmas());
         sidebar.add(btnFirmas);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnContadores = crearBotonSidebar(" Contadores");
         btnContadores.addActionListener(e -> abrirGestionContadores());
         sidebar.add(btnContadores);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnListasContadores = crearBotonSidebar(" Listas Contadores");
         btnListasContadores.addActionListener(e -> abrirListasContadores());
         sidebar.add(btnListasContadores);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnDeclaraciones = crearBotonSidebar(" Declaraciones");
         btnDeclaraciones.addActionListener(e -> abrirDeclaracionesContadores());
         sidebar.add(btnDeclaraciones);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnDescargaMasiva = crearBotonSidebar(" Descarga Masiva");
         btnDescargaMasiva.addActionListener(e -> ExeLauncher.lanzarDescargaMasiva(this));
         sidebar.add(btnDescargaMasiva);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton btnLectorXml = crearBotonSidebar(" Lector XML");
         btnLectorXml.addActionListener(e -> ExeLauncher.lanzarLectorXml(this));
@@ -131,42 +138,48 @@ public class Index extends javax.swing.JFrame {
 
         // ================= PANEL DE CONTENIDO (Derecha) =================
         JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(AppTheme.BACKGROUND);
         contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         // Header superior
         JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(AppTheme.BACKGROUND);
         headerPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
-        
+
         JPanel textHeader = new JPanel(new BorderLayout());
+        textHeader.setBackground(AppTheme.BACKGROUND);
         JLabel lblHeaderTitle = new JLabel("Bienvenido de nuevo");
         lblHeaderTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        JLabel lblHeaderSub = new JLabel("Resumen general del estado de tus clientes");
+        lblHeaderTitle.setForeground(AppTheme.TEXT_PRIMARY);
+
+        JLabel lblHeaderSub = new JLabel("Resumen general del estado de tus clientes y e-firmas");
         lblHeaderSub.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblHeaderSub.setForeground(UIManager.getColor("Label.disabledForeground"));
+        lblHeaderSub.setForeground(AppTheme.TEXT_SECONDARY);
         textHeader.add(lblHeaderTitle, BorderLayout.NORTH);
         textHeader.add(lblHeaderSub, BorderLayout.SOUTH);
-        
-        JButton btnRefrescar = new JButton("Refrescar");
-        btnRefrescar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnRefrescar.putClientProperty("JButton.buttonType", "roundRect");
+
+        JButton btnRefrescar = new JButton("🔄 Refrescar");
+        AppTheme.stylePrimaryButton(btnRefrescar);
         btnRefrescar.addActionListener(e -> cargarDatosDashboard());
-        
+
         headerPanel.add(textHeader, BorderLayout.WEST);
         headerPanel.add(btnRefrescar, BorderLayout.EAST);
         contentPanel.add(headerPanel, BorderLayout.NORTH);
 
         // Área Central: Métrica + Tabla
-        JPanel centerPanel = new JPanel(new BorderLayout(0, 25));
+        JPanel centerPanel = new JPanel(new BorderLayout(0, 20));
+        centerPanel.setBackground(AppTheme.BACKGROUND);
 
         // 1. Fila de Tarjetas de Métricas (KPI Cards)
         JPanel cardsContainer = new JPanel(new GridLayout(1, 3, 20, 0));
-        
-        JPanel cardClientes = crearCardMetrica("Total Clientes", "0", new Color(41, 128, 185));
+        cardsContainer.setBackground(AppTheme.BACKGROUND);
+
+        JPanel cardClientes = crearCardMetrica("Total Clientes", "0", AppTheme.PRIMARY);
         lblTotalClientes = (JLabel) cardClientes.getClientProperty("valLabel");
-        
+
         JPanel cardTerceros = crearCardMetrica("Total Terceros", "0", new Color(39, 174, 96));
         lblTotalTerceros = (JLabel) cardTerceros.getClientProperty("valLabel");
-        
+
         JPanel cardContadores = crearCardMetrica("Contadores Activos", "0", new Color(142, 68, 173));
         lblTotalContadores = (JLabel) cardContadores.getClientProperty("valLabel");
 
@@ -175,14 +188,15 @@ public class Index extends javax.swing.JFrame {
         cardsContainer.add(cardContadores);
         centerPanel.add(cardsContainer, BorderLayout.NORTH);
 
-        // 2. Tabla de E-Firmas por vencer
+        // 2. Tabla de E-Firmas por vencer con Paginación
         JPanel tableSection = new JPanel(new BorderLayout());
+        tableSection.setBackground(AppTheme.SURFACE);
         tableSection.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1, true),
-                " E-Firmas Registradas / Expiraciones ",
+                BorderFactory.createLineBorder(AppTheme.BORDER, 1, true),
+                " Semáforo de E-Firmas (Ordenado por Vencimiento Más Cercano) ",
                 0, 0,
                 new Font("Segoe UI", Font.BOLD, 14),
-                UIManager.getColor("Label.foreground")
+                AppTheme.TEXT_PRIMARY
         ));
 
         tableModel = new DefaultTableModel(
@@ -198,7 +212,10 @@ public class Index extends javax.swing.JFrame {
         tblFirmas = new JTable(tableModel);
         tblFirmas.setRowHeight(30);
         tblFirmas.setShowHorizontalLines(true);
+        tblFirmas.setGridColor(AppTheme.BORDER);
         tblFirmas.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        tblFirmas.getTableHeader().setBackground(AppTheme.PANEL_BACKGROUND);
+        tblFirmas.getTableHeader().setForeground(AppTheme.TEXT_PRIMARY);
         tblFirmas.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
         // Ocultar ID Cliente
@@ -214,19 +231,22 @@ public class Index extends javax.swing.JFrame {
                 if (value != null) {
                     String val = value.toString();
                     if (val.contains("Vigente")) {
-                        cComp.setBackground(new Color(46, 204, 113, 80)); // Verde pastel
-                        cComp.setForeground(table.getForeground());
+                        cComp.setBackground(AppTheme.COLOR_VIGENTE_BG);
+                        cComp.setForeground(AppTheme.TEXT_PRIMARY);
                     } else if (val.contains("Próximo")) {
-                        cComp.setBackground(new Color(241, 196, 15, 80)); // Amarillo pastel
-                        cComp.setForeground(table.getForeground());
+                        cComp.setBackground(AppTheme.COLOR_PROXIMO_BG);
+                        cComp.setForeground(AppTheme.TEXT_PRIMARY);
                     } else if (val.contains("Vencido")) {
-                        cComp.setBackground(new Color(231, 76, 60, 80)); // Rojo pastel
-                        cComp.setForeground(table.getForeground());
+                        cComp.setBackground(AppTheme.COLOR_VENCIDO_BG);
+                        cComp.setForeground(AppTheme.TEXT_PRIMARY);
+                    } else {
+                        cComp.setBackground(AppTheme.SURFACE);
+                        cComp.setForeground(AppTheme.TEXT_PRIMARY);
                     }
                 }
                 if (isSelected) {
-                    cComp.setBackground(table.getSelectionBackground());
-                    cComp.setForeground(table.getSelectionForeground());
+                    cComp.setBackground(AppTheme.PRIMARY);
+                    cComp.setForeground(AppTheme.SURFACE);
                 }
                 return cComp;
             }
@@ -244,7 +264,7 @@ public class Index extends javax.swing.JFrame {
                         Cliente cli = c.getClienteById(idCliente);
                         if (cli != null) {
                             new EditarFirmaDialog(Index.this, c, cli).setVisible(true);
-                            cargarDatosDashboard();
+                            cargarFirmasPaginadas();
                         }
                     }
                 }
@@ -253,7 +273,41 @@ public class Index extends javax.swing.JFrame {
 
         JScrollPane scrollPane = new JScrollPane(tblFirmas);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        scrollPane.getViewport().setBackground(AppTheme.SURFACE);
         tableSection.add(scrollPane, BorderLayout.CENTER);
+
+        // ================= BARRA DE PAGINACIÓN (15 en 15) =================
+        JPanel paginationPanel = new JPanel(new BorderLayout(10, 0));
+        paginationPanel.setBackground(AppTheme.PANEL_BACKGROUND);
+        paginationPanel.setBorder(new EmptyBorder(8, 15, 8, 15));
+
+        btnVerMenos = new JButton("⬅ Ver menos");
+        AppTheme.styleSecondaryButton(btnVerMenos);
+        btnVerMenos.addActionListener(e -> {
+            if (paginaActual > 0) {
+                paginaActual--;
+                cargarFirmasPaginadas();
+            }
+        });
+
+        lblPaginacion = new JLabel("Cargando...", SwingConstants.CENTER);
+        lblPaginacion.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblPaginacion.setForeground(AppTheme.TEXT_PRIMARY);
+
+        btnVerMas = new JButton("Ver más ➡");
+        AppTheme.styleSecondaryButton(btnVerMas);
+        btnVerMas.addActionListener(e -> {
+            if ((paginaActual + 1) * TAMANO_PAGINA < totalFirmas) {
+                paginaActual++;
+                cargarFirmasPaginadas();
+            }
+        });
+
+        paginationPanel.add(btnVerMenos, BorderLayout.WEST);
+        paginationPanel.add(lblPaginacion, BorderLayout.CENTER);
+        paginationPanel.add(btnVerMas, BorderLayout.EAST);
+
+        tableSection.add(paginationPanel, BorderLayout.SOUTH);
 
         centerPanel.add(tableSection, BorderLayout.CENTER);
         contentPanel.add(centerPanel, BorderLayout.CENTER);
@@ -269,27 +323,33 @@ public class Index extends javax.swing.JFrame {
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.putClientProperty("JButton.buttonType", "roundRect");
+        btn.setBackground(AppTheme.SURFACE);
+        btn.setForeground(AppTheme.TEXT_PRIMARY);
+        btn.setBorder(new LineBorder(AppTheme.BORDER, 1, true));
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
     }
 
     private JPanel crearCardMetrica(String titulo, String valor, Color accentColor) {
         JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(AppTheme.SURFACE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1, true),
+            BorderFactory.createLineBorder(AppTheme.BORDER, 1, true),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
-        
+
         JLabel lblTitle = new JLabel(titulo);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblTitle.setForeground(UIManager.getColor("Label.disabledForeground"));
-        
+        lblTitle.setForeground(AppTheme.TEXT_SECONDARY);
+
         JLabel lblVal = new JLabel(valor);
         lblVal.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblVal.setForeground(accentColor);
 
         card.add(lblTitle, BorderLayout.NORTH);
         card.add(lblVal, BorderLayout.CENTER);
-        
+
         card.putClientProperty("valLabel", lblVal);
         return card;
     }
@@ -298,27 +358,59 @@ public class Index extends javax.swing.JFrame {
         if (c == null) return;
 
         setEnabled(false);
+        paginaActual = 0;
 
-        SwingWorker<java.util.List<Object[]>, Void> worker = new SwingWorker<>() {
-            private int totalClientes = 0;
-            private int totalTerceros = 0;
-            private int totalContadores = 0;
-
+        SwingWorker<int[], Void> worker = new SwingWorker<>() {
             @Override
-            protected java.util.List<Object[]> doInBackground() throws Exception {
-                totalClientes = c.getClientesLigeros().size();
-                totalTerceros = c.getTercerosLigeros().size();
-                totalContadores = c.getAllContadores().size();
-                return c.obtenerSemaforoDashboard();
+            protected int[] doInBackground() {
+                int totalClientes = c.getClientesLigeros().size();
+                int totalTerceros = c.getTercerosLigeros().size();
+                int totalContadores = c.getAllContadores().size();
+                return new int[]{totalClientes, totalTerceros, totalContadores};
             }
 
             @Override
             protected void done() {
                 try {
-                    java.util.List<Object[]> firmas = get();
-                    lblTotalClientes.setText(""+totalClientes);
-                    lblTotalTerceros.setText(""+totalTerceros);
-                    lblTotalContadores.setText(""+totalContadores);
+                    int[] totals = get();
+                    lblTotalClientes.setText(String.valueOf(totals[0]));
+                    lblTotalTerceros.setText(String.valueOf(totals[1]));
+                    lblTotalContadores.setText(String.valueOf(totals[2]));
+                    cargarFirmasPaginadas();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(Index.this,
+                        "Error al conectar con la base de datos:\n" + ex.getMessage(),
+                        "Error de Red",
+                        JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    setEnabled(true);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void cargarFirmasPaginadas() {
+        if (c == null) return;
+
+        btnVerMenos.setEnabled(false);
+        btnVerMas.setEnabled(false);
+        lblPaginacion.setText("Cargando firmas...");
+
+        SwingWorker<List<Object[]>, Void> worker = new SwingWorker<>() {
+            private int conteoTotal = 0;
+
+            @Override
+            protected List<Object[]> doInBackground() {
+                conteoTotal = c.contarTotalSemaforo();
+                return c.obtenerSemaforoPaginado(TAMANO_PAGINA, paginaActual * TAMANO_PAGINA);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    totalFirmas = conteoTotal;
+                    List<Object[]> firmas = get();
 
                     tableModel.setRowCount(0);
                     for (Object[] f : firmas) {
@@ -335,7 +427,7 @@ public class Index extends javax.swing.JFrame {
                         } else if ("PROXIMA".equals(estadoAlerta)) {
                             estado = "Próximo a vencer (" + (diasRestantes / 30) + " mes/es)";
                         } else if ("URGENTE".equals(estadoAlerta) || "VENCIDA".equals(estadoAlerta)) {
-                            estado = "Vencido / < 1 mes";
+                            estado = "Vencido / < 1 mes (" + diasRestantes + " días)";
                         }
 
                         tableModel.addRow(new Object[]{
@@ -346,13 +438,22 @@ public class Index extends javax.swing.JFrame {
                             estado
                         });
                     }
+
+                    int totalPaginas = (int) Math.ceil((double) totalFirmas / TAMANO_PAGINA);
+                    if (totalPaginas == 0) totalPaginas = 1;
+
+                    int desde = totalFirmas == 0 ? 0 : (paginaActual * TAMANO_PAGINA) + 1;
+                    int hasta = Math.min((paginaActual + 1) * TAMANO_PAGINA, totalFirmas);
+
+                    lblPaginacion.setText("Página " + (paginaActual + 1) + " de " + totalPaginas +
+                                          "  •  Mostrando " + desde + "-" + hasta + " de " + totalFirmas + " firmas");
+
+                    btnVerMenos.setEnabled(paginaActual > 0);
+                    btnVerMas.setEnabled((paginaActual + 1) < totalPaginas);
+
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(Index.this, 
-                        "Error al conectar con la base de datos central:\n" + ex.getMessage(), 
-                        "Error de Red", 
-                        JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    setEnabled(true);
+                    lblPaginacion.setText("Error al cargar firmas.");
+                    System.err.println("Error al cargar semáforo paginado: " + ex.getMessage());
                 }
             }
         };
@@ -366,7 +467,7 @@ public class Index extends javax.swing.JFrame {
                 UIManager.setLookAndFeel(new FlatDarkLaf());
                 isDarkMode = true;
             } else {
-                UIManager.setLookAndFeel(new FlatLightLaf());
+                AppTheme.setupTheme();
                 isDarkMode = false;
             }
             SwingUtilities.updateComponentTreeUI(this);
@@ -379,55 +480,55 @@ public class Index extends javax.swing.JFrame {
     private void abrirAgregarCliente() {
         AñadirCliente ac = new AñadirCliente(this, rootPaneCheckingEnabled, c);
         ac.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirAgregarTercero() {
         añadirTercero at = new añadirTercero(this, rootPaneCheckingEnabled, c);
         at.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirBuscarClientes() {
         BuscarPersonas bc = new BuscarPersonas(this, rootPaneCheckingEnabled, c, "clientes");
         bc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirBuscarTerceros() {
         BuscarPersonas bc = new BuscarPersonas(this, rootPaneCheckingEnabled, c, "terceros");
         bc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirBuscarFirmas() {
         BuscarPersonas bc = new BuscarPersonas(this, rootPaneCheckingEnabled, c, "firmas");
         bc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirEliminarPersonas() {
         EliminarPersonas ec = new EliminarPersonas(this, rootPaneCheckingEnabled, c, "clientes");
         ec.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirGestionContadores() {
         GestionContadores gc = new GestionContadores(this, rootPaneCheckingEnabled, c);
         gc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirListasContadores() {
         VerListasContadores vlc = new VerListasContadores(this, rootPaneCheckingEnabled, c);
         vlc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void abrirDeclaracionesContadores() {
         DeclaracionesContadores dc = new DeclaracionesContadores(this, rootPaneCheckingEnabled, c);
         dc.setVisible(true);
-        cargarDatosDashboard(); // refrescar
+        cargarDatosDashboard();
     }
 
     private void confirmarCierre() {

@@ -333,4 +333,12 @@ public class Controlador implements IControler{
     public java.util.List<Object[]> obtenerSemaforoDashboard() {
         return dBFirmas.obtenerSemaforoDashboard();
     }
+
+    public int contarTotalSemaforo() {
+        return dBFirmas.contarTotalSemaforo();
+    }
+
+    public java.util.List<Object[]> obtenerSemaforoPaginado(int limit, int offset) {
+        return dBFirmas.obtenerSemaforoPaginado(limit, offset);
+    }
 }

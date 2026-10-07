@@ -1,8 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
- */
 package UI;
+
+
 
 import controlador.Controlador;
 import entidades.Cliente;
@@ -29,8 +27,8 @@ public class AñadirCliente extends javax.swing.JDialog {
 
     // Campos personalizados para registro opcional de E-Firma
     private javax.swing.JCheckBox chkAgregarFirma;
-    private javax.swing.JTextField txtFExp;
-    private javax.swing.JTextField txtFRen;
+    private DatePickerField txtFExp;
+    private DatePickerField txtFRen;
     private javax.swing.JTextField txtFCert;
     private javax.swing.JTextField txtFKey;
     private javax.swing.JTextField txtFPass;
@@ -130,20 +128,20 @@ public class AñadirCliente extends javax.swing.JDialog {
         sGbc.gridx = 0; sGbc.gridy = 0; sGbc.weightx = 0.3;
         fieldsPanel.add(new javax.swing.JLabel("Expira (DD/MM/YYYY):"), sGbc);
         sGbc.gridx = 1; sGbc.weightx = 0.7;
-        txtFExp = new javax.swing.JTextField(10);
-        txtFExp.putClientProperty("JTextField.roundRect", true);
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        txtFExp.setText(sdf.format(new java.util.Date()));
+        txtFExp = new DatePickerField();
+
+
+
         fieldsPanel.add(txtFExp, sGbc);
         
         // Renewal
         sGbc.gridx = 0; sGbc.gridy = 1; sGbc.weightx = 0.3;
         fieldsPanel.add(new javax.swing.JLabel("Renovación (DD/MM/YYYY):"), sGbc);
         sGbc.gridx = 1; sGbc.weightx = 0.7;
-        txtFRen = new javax.swing.JTextField(10);
-        txtFRen.putClientProperty("JTextField.roundRect", true);
-        txtFRen.setText(sdf.format(new java.util.Date()));
-        fieldsPanel.add(txtFRen, sGbc);
+        txtFRen = new DatePickerField();
+
+
+
         
         // Certificate
         sGbc.gridx = 0; sGbc.gridy = 2; sGbc.weightx = 0.3;

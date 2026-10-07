@@ -80,15 +80,29 @@ public class EFirmasDAO {
         }
     }
 
-    public java.util.List<Object[]> obtenerSemaforoDashboard() {
-        java.util.List<Object[]> res = new java.util.ArrayList<>();
-        String sqlUrgente = "SELECT id_cliente, nombre_cliente, rfc_cliente, fecha_expiracion, estado_alerta, dias_restantes FROM vw_semaforo_efirmas WHERE estado_alerta IN ('VENCIDA', 'URGENTE') ORDER BY dias_restantes ASC";
-        String sqlProxima = "SELECT id_cliente, nombre_cliente, rfc_cliente, fecha_expiracion, estado_alerta, dias_restantes FROM vw_semaforo_efirmas WHERE estado_alerta = 'PROXIMA' ORDER BY dias_restantes ASC";
-        String sqlDefault = "SELECT id_cliente, nombre_cliente, rfc_cliente, fecha_expiracion, estado_alerta, dias_restantes FROM vw_semaforo_efirmas ORDER BY dias_restantes ASC LIMIT 10";
+    public int contarTotalSemaforo() {
+        String sql = "SELECT COUNT(*) FROM vw_semaforo_efirmas";
+        try (Connection conexion = ConectorBD.getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al contar semáforo de e-firmas: " + e.getMessage(), e);
+        }
+        return 0;
+    }
 
-        try (Connection conexion = ConectorBD.getConexion()) {
-            // 1. Intentar Urgentes/Vencidas
-            try (PreparedStatement ps = conexion.prepareStatement(sqlUrgente); ResultSet rs = ps.executeQuery()) {
+    public java.util.List<Object[]> obtenerSemaforoPaginado(int limit, int offset) {
+        java.util.List<Object[]> res = new java.util.ArrayList<>();
+        String sql = "SELECT id_cliente, nombre_cliente, rfc_cliente, fecha_expiracion, estado_alerta, dias_restantes FROM vw_semaforo_efirmas ORDER BY dias_restantes ASC LIMIT ? OFFSET ?";
+
+        try (Connection conexion = ConectorBD.getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     res.add(new Object[]{
                         rs.getInt("id_cliente"),
@@ -100,39 +114,13 @@ public class EFirmasDAO {
                     });
                 }
             }
-            // 2. Si está vacío, intentar Próximas
-            if (res.isEmpty()) {
-                try (PreparedStatement ps = conexion.prepareStatement(sqlProxima); ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        res.add(new Object[]{
-                            rs.getInt("id_cliente"),
-                            rs.getString("nombre_cliente"),
-                            rs.getString("rfc_cliente"),
-                            rs.getString("fecha_expiracion"),
-                            rs.getString("estado_alerta"),
-                            rs.getInt("dias_restantes")
-                        });
-                    }
-                }
-            }
-            // 3. Si sigue vacío, por defecto 10 firmas
-            if (res.isEmpty()) {
-                try (PreparedStatement ps = conexion.prepareStatement(sqlDefault); ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        res.add(new Object[]{
-                            rs.getInt("id_cliente"),
-                            rs.getString("nombre_cliente"),
-                            rs.getString("rfc_cliente"),
-                            rs.getString("fecha_expiracion"),
-                            rs.getString("estado_alerta"),
-                            rs.getInt("dias_restantes")
-                        });
-                    }
-                }
-            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al cargar semáforo de e-firmas: " + e.getMessage(), e);
+            throw new RuntimeException("Error al cargar semáforo paginado de e-firmas: " + e.getMessage(), e);
         }
         return res;
+    }
+
+    public java.util.List<Object[]> obtenerSemaforoDashboard() {
+        return obtenerSemaforoPaginado(15, 0);
     }
 }
